@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOLINO VILLAS Karbantartás Kalkulátor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>MOLINO VILLAS Karbantartás Kalkulátor</h2>
+
+    <!-- Egyszer megadandó adatok -->
+    <div class="input-section">
+        <h3>Egyszer megadandó adatok</h3>
+        <form id="infoForm">
+            <label for="offererName">Ajánlatkészítő neve:</label><br>
+            <input type="text" id="offererName" name="offererName" required><br><br>
+
+            <label for="clientName">Ügyfél neve:</label><br>
+            <input type="text" id="clientName" name="clientName" required><br><br>
+
+            <label for="clientAddress">Ügyfél pontos címe:</label><br>
+            <input type="text" id="clientAddress" name="clientAddress" required><br><br>
+
+            <label for="clientPhone">Ügyfél telefonszáma:</label><br>
+            <input type="text" id="clientPhone" name="clientPhone" required><br><br>
+
+            <label for="clientEmail">Ügyfél email címe:</label><br>
+            <input type="email" id="clientEmail" name="clientEmail" required><br><br>
+
+            <label for="validityDays">Ajánlat érvényessége (nap):</label><br>
+            <input type="number" id="validityDays" name="validityDays" required><br><br>
+
+            <button type="button" onclick="saveFormData()">Adatok mentése</button>
+            <button type="button" onclick="clearFormData()">Adatok törlése</button>
+        </form>
+    </div>
+
+    <!-- Rekordok bevitele -->
+    <div class="input-section">
+        <h3>Karbantartási munkák bevitele</h3>
+        <form id="maintenanceForm">
+            <label for="workName">Munka megnevezése:</label><br>
+            <input type="text" id="workName" name="workName" required><br><br>
+
+            <label for="materialCost">Anyagköltség (€):</label><br>
+            <input type="number" id="materialCost" name="materialCost" required><br><br>
+
+            <label for="workHours">Munkaórák száma (h):</label><br>
+            <input type="number" id="workHours" name="workHours" required><br><br>
+
+            <label for="hourlyRate">Munkaóra költsége (€/h):</label><br>
+            <input type="number" id="hourlyRate" name="hourlyRate" required><br><br>
+
+            <label for="notes">Megjegyzés:</label><br>
+            <textarea id="notes" name="notes" required></textarea><br><br>
+
+            <button type="button" onclick="RecordManager.addRecord()">Új rekord hozzáadása</button>
+        </form>
+    </div>
+
+    <h3>Összesített adatok</h3>
+    <table id="summaryTable">
+        <thead>
+            <tr>
+                <th class="info-column">Ajánlatkészítő:</th>
+                <td colspan="6"><span id="displayOffererName"></span></td>
+            </tr>
+            <tr>
+                <th class="info-column">Ügyfél neve:</th>
+                <td colspan="6"><span id="displayClientName"></span></td>
+            </tr>
+            <tr>
+                <th class="info-column">Ügyfél címe:</th>
+                <td colspan="6"><span id="displayClientAddress"></span></td>
+            </tr>
+            <tr>
+                <th class="info-column">Ügyfél telefonszáma:</th>
+                <td colspan="6"><span id="displayClientPhone"></span></td>
+            </tr>
+            <tr>
+                <th class="info-column">Ügyfél email címe:</th>
+                <td colspan="6"><span id="displayClientEmail"></span></td>
+            </tr>
+            <tr>
+                <th class="info-column">Ajánlat érvényessége (nap):</th>
+                <td colspan="6"><span id="displayValidityDays"></span></td>
+            </tr>
+            <tr>
+                <th>Munka megnevezése</th>
+                <th>Anyagköltség (€)</th>
+                <th>Munkaórák száma (h)</th>
+                <th>Munkaóra költsége (€/h)</th>
+                <th>Munkadíj (€)</th>
+                <th>Megjegyzés</th>
+                <th>Összesen (€)</th>
+                <th>Művelet</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><strong>Összesen:</strong></td>
+                <td id="totalMaterialCost">0</td>
+                <td id="totalWorkHours">0</td>
+                <td></td>
+                <td id="totalLaborCost">0</td>
+                <td></td>
+                <td id="totalOverallCost">0</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Gombok -->
+    <button id="exportButton" type="button" onclick="RecordManager.exportToPDF()">Exportálás PDF-be</button>
+    <button id="exportExcelButton" type="button" onclick="RecordManager.exportToExcel()">Exportálás Excel-be</button>
+
+    <!-- Fotófeltöltés -->
+    <div id="photoUploadSection">
+        <h3>Fotók feltöltése</h3>
+        <input type="file" id="photoUpload" accept="image/*" multiple onchange="PhotoManager.handlePhotoUpload()">
+        <p>Maximum 20 fotó tölthető fel.</p>
+        <div id="photoList"></div>
+    </div>
+
+    <!-- Külső könyvtárak -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
