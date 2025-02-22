@@ -1,0 +1,113 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 20px;
+}
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 8px;
+}
+th {
+    background-color: #f2f2f2;
+}
+.info-row {
+    background-color: #e0f7fa;
+}
+.input-section {
+    border: 2px solid #ccc;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    background-color: rgba(128, 0, 0, 0.1);
+}
+.input-section h3 {
+    margin-top: 0;
+}
+.info-column {
+    background-color: #e0f7fa;
+    font-weight: bold;
+    text-align: left;
+}
+#summaryTable {
+    background-color: rgba(128, 0, 0, 0.1);
+    width: 100%;
+    overflow-x: auto;
+}
+#photoUploadSection {
+    display: none;
+    margin-top: 20px;
+}
+#photoList {
+    margin-top: 10px;
+}
+.photo-item {
+    margin-bottom: 10px;
+}
+
+/* Reszponzív design */
+@media (max-width: 768px) {
+    h2 {
+        font-size: 24px;
+        text-align: center;
+    }
+    h3 {
+        font-size: 20px;
+    }
+    label {
+        font-size: 16px;
+    }
+    input, textarea, button {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 16px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    table, th, td {
+        font-size: 14px;
+        padding: 6px;
+    }
+    .input-section {
+        padding: 15px;
+    }
+    #summaryTable {
+        font-size: 12px;
+    }
+    #summaryTable th, #summaryTable td {
+        padding: 4px;
+    }
+    button {
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    h2 {
+        font-size: 20px;
+    }
+    h3 {
+        font-size: 18px;
+    }
+    label {
+        font-size: 14px;
+    }
+    input, textarea, button {
+        font-size: 14px;
+        padding: 8px;
+    }
+    table, th, td {
+        font-size: 12px;
+        padding: 4px;
+    }
+    .input-section {
+        padding: 10px;
+    }
+    #summaryTable {
+        font-size: 10px;
+    }
+    #summaryTable th, #summaryTable td {
+        padding: 2px;
+    }
+}
