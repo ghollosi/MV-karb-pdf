@@ -124,6 +124,34 @@ textarea#workDescription {
     text-decoration: none;
 }
 
+/* Export gombok és nyelvválasztó stílusa */
+.export-section {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#languageSelect {
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#exportButton, #exportExcelButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #ccc;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#exportButton:hover, #exportExcelButton:hover {
+    background-color: #aaa;
+}
+
 /* Reszponzív design */
 @media (max-width: 768px) {
     h2 {
@@ -160,15 +188,25 @@ textarea#workDescription {
         margin-top: 10px;
     }
     #travelRate {
-        width: 80px; /* Kisebb méret kisebb képernyőkön */
+        width: 80px;
     }
     #grandTotalRow td {
-        font-size: 14px; /* Kisebb betűméret reszponzív nézetben */
+        font-size: 14px;
     }
-    /* Reszponzív modal */
     .modal-content {
         width: 90%;
         margin: 20% auto;
+    }
+    .export-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    #languageSelect {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    #exportButton, #exportExcelButton {
+        width: 100%;
     }
 }
 
@@ -200,12 +238,11 @@ textarea#workDescription {
         padding: 2px;
     }
     #travelRate {
-        width: 60px; /* Még kisebb méret nagyon kicsi képernyőkön */
+        width: 60px;
     }
     #grandTotalRow td {
-        font-size: 12px; /* Még kisebb betűméret nagyon kicsi képernyőkön */
+        font-size: 12px;
     }
-    /* Reszponzív modal és súgó gomb */
     .modal-content {
         width: 95%;
         margin: 25% auto;
