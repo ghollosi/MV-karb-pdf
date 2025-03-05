@@ -46,6 +46,84 @@ th {
     margin-bottom: 10px;
 }
 
+/* Új stílusok a "Munka részletes leírása" és "Kilométerdíj" mezőkhöz */
+textarea#workDescription {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#travelRate {
+    width: 100px;
+    padding: 5px;
+    margin-left: 10px;
+}
+
+/* Új stílus az "Összesen (Anyag, Munkadíj, Kiszállás)" sorhoz */
+#grandTotalRow td {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* Súgó gomb stílusa */
+#helpButton {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 30px;
+    height: 30px;
+    background-color: #ccc;
+    color: #333;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+#helpButton:hover {
+    background-color: #aaa;
+}
+
+/* Modal stílusa */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #f9f9f9;
+    margin: 15% auto;
+    padding: 20px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    font-family: Arial, sans-serif;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #333;
+    text-decoration: none;
+}
+
 /* Reszponzív design */
 @media (max-width: 768px) {
     h2 {
@@ -81,6 +159,17 @@ th {
     button {
         margin-top: 10px;
     }
+    #travelRate {
+        width: 80px; /* Kisebb méret kisebb képernyőkön */
+    }
+    #grandTotalRow td {
+        font-size: 14px; /* Kisebb betűméret reszponzív nézetben */
+    }
+    /* Reszponzív modal */
+    .modal-content {
+        width: 90%;
+        margin: 20% auto;
+    }
 }
 
 @media (max-width: 480px) {
@@ -109,5 +198,22 @@ th {
     }
     #summaryTable th, #summaryTable td {
         padding: 2px;
+    }
+    #travelRate {
+        width: 60px; /* Még kisebb méret nagyon kicsi képernyőkön */
+    }
+    #grandTotalRow td {
+        font-size: 12px; /* Még kisebb betűméret nagyon kicsi képernyőkön */
+    }
+    /* Reszponzív modal és súgó gomb */
+    .modal-content {
+        width: 95%;
+        margin: 25% auto;
+        padding: 15px;
+    }
+    #helpButton {
+        width: 25px;
+        height: 25px;
+        font-size: 16px;
     }
 }
