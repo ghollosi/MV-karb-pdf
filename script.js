@@ -31,7 +31,13 @@ const RecordManager = {
             this.updateTable();
             document.getElementById('maintenanceForm').reset();
         } else {
-            alert('Kérjük, töltse ki az összes mezőt helyesen!');
+            const lang = document.getElementById('languageSelect').value;
+            const messages = {
+                hu: "Kérjük, töltse ki az összes mezőt helyesen!",
+                en: "Please fill in all fields correctly!",
+                es: "¡Por favor, complete todos los campos correctamente!"
+            };
+            alert(messages[lang]);
         }
     },
     deleteRecord: function (index) {
@@ -110,72 +116,173 @@ const RecordManager = {
     },
     exportToPDF: function () {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'portrait' });
-    
-        doc.setFont("Courier", "normal");
-    
-        // Függvény az ékezetes betűk cseréjére
-        const replaceHungarianChars = (text) => {
-            return text
-                .replace(/ő/g, 'o')
-                .replace(/Ő/g, 'O')
-                .replace(/ű/g, 'u')
-                .replace(/Ű/g, 'U');
+        const language = document.getElementById('languageSelect').value;
+
+        if (this.records.length === 0) {
+            const messages = {
+                hu: "Nincs exportálható adat! Kérjük, adjon fel legalább egy rekordot.",
+                en: "No data to export! Please add at least one record.",
+                es: "¡No hay datos para exportar! Por favor, añada al menos un registro."
+            };
+            alert(messages[language]);
+            return;
+        }
+
+        // Nyelvspecifikus szövegek
+        const translations = {
+            hu: {
+                title: "MOLINO VILLAS Karbantartás Kalkulátor (Bruttó)",
+                generated: "Generálva",
+                offerer: "Ajánlatkészítő",
+                clientName: "Ügyfél neve",
+                clientAddress: "Ügyfél címe",
+                clientPhone: "Ügyfél telefonszáma",
+                clientEmail: "Ügyfél email címe",
+                validity: "Ajánlat érvényessége",
+                distance: "Távolság a telephelytől",
+                days: "nap",
+                km: "km",
+                headers: [
+                    "Munka megnevezése",
+                    "Munka részletes leírása",
+                    "Anyagköltség (€, bruttó)",
+                    "Munkaórák száma (h)",
+                    "Munkaóra költsége/ fő (€/h, bruttó)",
+                    "Munkadíj (€, bruttó)",
+                    "Megjegyzés",
+                    "Összesen (€, bruttó)"
+                ],
+                totals: [
+                    "Összesen:",
+                    "Kilométerdíj (€, bruttó):",
+                    "Kiszállási díj (€, bruttó):",
+                    "Összesen (Anyag, Munkadíj, Kiszállás, bruttó):"
+                ],
+                note: "A feltüntetett összegek az ÁFA-t tartalmazzák.",
+                filename: "molino_villas_karbantartas_osszesites_brutto_hu.pdf"
+            },
+            en: {
+                title: "MOLINO VILLAS Maintenance Calculator (Gross)",
+                generated: "Generated",
+                offerer: "Offer prepared by",
+                clientName: "Client name",
+                clientAddress: "Client address",
+                clientPhone: "Client phone number",
+                clientEmail: "Client email address",
+                validity: "Offer validity",
+                distance: "Distance from base",
+                days: "days",
+                km: "km",
+                headers: [
+                    "Work description",
+                    "Detailed work description",
+                    "Material cost (€, gross)",
+                    "Number of work hours (h)",
+                    "Hourly rate per person (€/h, gross)",
+                    "Labor cost (€, gross)",
+                    "Notes",
+                    "Total (€, gross)"
+                ],
+                totals: [
+                    "Total:",
+                    "Mileage rate (€, gross):",
+                    "Travel cost (€, gross):",
+                    "Total (Materials, Labor, Travel, gross):"
+                ],
+                note: "The amounts shown include VAT.",
+                filename: "molino_villas_maintenance_summary_gross_en.pdf"
+            },
+            es: {
+                title: "Calculadora de Mantenimiento MOLINO VILLAS (Bruto)",
+                generated: "Generado",
+                offerer: "Preparado por",
+                clientName: "Nombre del cliente",
+                clientAddress: "Dirección del cliente",
+                clientPhone: "Número de teléfono del cliente",
+                clientEmail: "Correo electrónico del cliente",
+                validity: "Validez de la oferta",
+                distance: "Distancia desde la base",
+                days: "días",
+                km: "km",
+                headers: [
+                    "Descripción del trabajo",
+                    "Descripción detallada del trabajo",
+                    "Costo de materiales (€, bruto)",
+                    "Número de horas de trabajo (h)",
+                    "Tarifa horaria por persona (€/h, bruto)",
+                    "Costo de mano de obra (€, bruto)",
+                    "Notas",
+                    "Total (€, bruto)"
+                ],
+                totals: [
+                    "Total:",
+                    "Tarifa por kilómetro (€, bruto):",
+                    "Costo de desplazamiento (€, bruto):",
+                    "Total (Materiales, Mano de obra, Desplazamiento, bruto):"
+                ],
+                note: "Los importes indicados incluyen el IVA.",
+                filename: "molino_villas_resumen_mantenimiento_bruto_es.pdf"
+            }
         };
-    
+
+        const selectedLang = translations[language];
+        const doc = new jsPDF({ orientation: 'portrait' });
+        doc.setFont("Courier", "normal");
+
+        // Függvény az ékezetes betűk cseréjére (csak magyar nyelvnél)
+        const replaceHungarianChars = (text) => {
+            if (language === 'hu') {
+                return text
+                    .replace(/ő/g, 'o')
+                    .replace(/Ő/g, 'O')
+                    .replace(/ű/g, 'u')
+                    .replace(/Ű/g, 'U');
+            }
+            return text;
+        };
+
         // Cím
         doc.setFontSize(15);
-        doc.text(replaceHungarianChars('MOLINO VILLAS Karbantartás Kalkulátor'), 10, 10);
-    
+        doc.text(replaceHungarianChars(selectedLang.title), 10, 10);
+
         // Generálási dátum
         doc.setFontSize(8);
         const currentDate = new Date().toLocaleString();
-        doc.text(`Generálva: ${currentDate}`, 10, 20);
-    
-        // Egyszer megadandó adatok minimális sorközzel
+        doc.text(replaceHungarianChars(`${selectedLang.generated}: ${currentDate}`), 10, 20);
+
+        // Egyszer megadandó adatok
         doc.setFontSize(9);
         let yPos = 30;
         const lineHeight = 5;
-        doc.text(replaceHungarianChars(`Ajánlatkészítő: ${document.getElementById('offererName').value}`), 10, yPos);
+        doc.text(replaceHungarianChars(`${selectedLang.offerer}: ${document.getElementById('offererName').value}`), 10, yPos);
         yPos += lineHeight;
-        doc.text(replaceHungarianChars(`Ügyfél neve: ${document.getElementById('clientName').value}`), 10, yPos);
+        doc.text(replaceHungarianChars(`${selectedLang.clientName}: ${document.getElementById('clientName').value}`), 10, yPos);
         yPos += lineHeight;
-        doc.text(replaceHungarianChars(`Ügyfél címe: ${document.getElementById('clientAddress').value}`), 10, yPos);
+        doc.text(replaceHungarianChars(`${selectedLang.clientAddress}: ${document.getElementById('clientAddress').value}`), 10, yPos);
         yPos += lineHeight;
-        doc.text(replaceHungarianChars(`Ügyfél telefonszáma: ${document.getElementById('clientPhone').value}`), 10, yPos);
+        doc.text(replaceHungarianChars(`${selectedLang.clientPhone}: ${document.getElementById('clientPhone').value}`), 10, yPos);
         yPos += lineHeight;
-        doc.text(replaceHungarianChars(`Ügyfél email címe: ${document.getElementById('clientEmail').value}`), 10, yPos);
+        doc.text(replaceHungarianChars(`${selectedLang.clientEmail}: ${document.getElementById('clientEmail').value}`), 10, yPos);
         yPos += lineHeight;
-        doc.text(replaceHungarianChars(`Ajánlat érvényessége: ${document.getElementById('validityDays').value} nap`), 10, yPos);
+        doc.text(replaceHungarianChars(`${selectedLang.validity}: ${document.getElementById('validityDays').value} ${selectedLang.days}`), 10, yPos);
         yPos += lineHeight;
-        doc.text(replaceHungarianChars(`Távolság a telephelytől: ${document.getElementById('distanceFromBase').value} km`), 10, yPos);
-    
+        doc.text(replaceHungarianChars(`${selectedLang.distance}: ${document.getElementById('distanceFromBase').value} ${selectedLang.km}`), 10, yPos);
+
         const tableStartY = yPos + 10;
-    
-        const headers = [
-            "Munka megnevezése",
-            "Munka részletes leírása",
-            "Anyagköltség (€)",
-            "Munkaórák száma (h)",
-            "Munkaóra költsége/ fő (€/h)",
-            "Munkadíj (€)",
-            "Megjegyzés",
-            "Összesen (€)"
-        ].map(replaceHungarianChars);
-    
+
         const data = this.records.map(record => [
-            replaceHungarianChars(record.workName),
-            replaceHungarianChars(record.workDescription),
+            record.workName,
+            record.workDescription,
             record.materialCost.toFixed(2),
             record.workHours.toFixed(2),
             record.hourlyRate.toFixed(2),
             record.laborCost.toFixed(2),
-            replaceHungarianChars(record.notes),
+            record.notes,
             record.totalCost.toFixed(2)
         ]);
-    
+
         doc.autoTable({
-            head: [headers],
+            head: [selectedLang.headers],
             body: data,
             startY: tableStartY,
             theme: 'striped',
@@ -205,14 +312,14 @@ const RecordManager = {
                 7: { cellWidth: 20 },
             },
         });
-    
+
         const totals = [
-            ["Összesen:", "", document.getElementById('totalMaterialCost').textContent, document.getElementById('totalWorkHours').textContent, "", document.getElementById('totalLaborCost').textContent, "", document.getElementById('totalOverallCost').textContent],
-            ["Kilométerdíj (€):", document.getElementById('travelRate').value || "0", "", "", "", "", "", ""],
-            ["Kiszállási díj (€):", "", "", "", "", "", "", document.getElementById('travelCost').textContent],
-            ["Összesen (Anyag, Munkadíj, Kiszállás):", "", "", "", "", "", "", document.getElementById('grandTotal').textContent]
-        ].map(row => row.map(cell => typeof cell === 'string' ? replaceHungarianChars(cell) : cell));
-    
+            [selectedLang.totals[0], "", document.getElementById('totalMaterialCost').textContent, document.getElementById('totalWorkHours').textContent, "", document.getElementById('totalLaborCost').textContent, "", document.getElementById('totalOverallCost').textContent],
+            [selectedLang.totals[1], document.getElementById('travelRate').value || "0", "", "", "", "", "", ""],
+            [selectedLang.totals[2], "", "", "", "", "", "", document.getElementById('travelCost').textContent],
+            [selectedLang.totals[3], "", "", "", "", "", "", document.getElementById('grandTotal').textContent]
+        ];
+
         doc.autoTable({
             body: totals,
             startY: doc.lastAutoTable.finalY + 10,
@@ -238,8 +345,13 @@ const RecordManager = {
                 7: { cellWidth: 20 },
             },
         });
-    
-        doc.save('molino_villas_karbantartas_osszesites.pdf');
+
+        // Megjegyzés a PDF alján
+        doc.setFontSize(8);
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.text(selectedLang.note, 10, finalY);
+
+        doc.save(selectedLang.filename);
     },
 };
 
@@ -248,7 +360,13 @@ const PhotoManager = {
     handlePhotoUpload: function () {
         const files = document.getElementById('photoUpload').files;
         if (files.length > 20) {
-            alert('Maximum 20 fotó tölthető fel!');
+            const lang = document.getElementById('languageSelect').value;
+            const messages = {
+                hu: "Maximum 20 fotó tölthető fel!",
+                en: "Maximum 20 photos can be uploaded!",
+                es: "¡Se pueden subir un máximo de 20 fotos!"
+            };
+            alert(messages[lang]);
             return;
         }
 
@@ -290,23 +408,42 @@ const PhotoManager = {
 };
 
 function validateForm() {
+    const lang = document.getElementById('languageSelect').value;
+    const messages = {
+        hu: {
+            invalidEmail: "Érvénytelen email cím!",
+            invalidPhone: "A telefonszám csak számokat tartalmazhat!",
+            negativeValues: "Az anyagköltség és a munkaórák nem lehetnek negatívak!"
+        },
+        en: {
+            invalidEmail: "Invalid email address!",
+            invalidPhone: "The phone number can only contain digits!",
+            negativeValues: "Material cost and work hours cannot be negative!"
+        },
+        es: {
+            invalidEmail: "¡Dirección de correo electrónico inválida!",
+            invalidPhone: "¡El número de teléfono solo puede contener dígitos!",
+            negativeValues: "¡El costo de los materiales y las horas de trabajo no pueden ser negativos!"
+        }
+    };
+
     const email = document.getElementById('clientEmail').value;
     const phone = document.getElementById('clientPhone').value;
     const materialCost = parseFloat(document.getElementById('materialCost').value);
     const workHours = parseFloat(document.getElementById('workHours').value);
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        alert('Érvénytelen email cím!');
+        alert(messages[lang].invalidEmail);
         return false;
     }
 
     if (!/^\d+$/.test(phone)) {
-        alert('A telefonszám csak számokat tartalmazhat!');
+        alert(messages[lang].invalidPhone);
         return false;
     }
 
     if (materialCost < 0 || workHours < 0) {
-        alert('Az anyagköltség és a munkaórák nem lehetnek negatívak!');
+        alert(messages[lang].negativeValues);
         return false;
     }
 
@@ -324,7 +461,13 @@ function saveFormData() {
         distanceFromBase: document.getElementById('distanceFromBase').value,
     };
     localStorage.setItem('formData', JSON.stringify(formData));
-    alert('Adatok mentve!');
+    const lang = document.getElementById('languageSelect').value;
+    const messages = {
+        hu: "Adatok mentve!",
+        en: "Data saved!",
+        es: "¡Datos guardados!"
+    };
+    alert(messages[lang]);
 }
 
 function clearFormData() {
@@ -340,7 +483,13 @@ function clearFormData() {
     PhotoManager.uploadedPhotos = [];
     PhotoManager.displayPhotos();
 
-    alert('Minden adat törölve!');
+    const lang = document.getElementById('languageSelect').value;
+    const messages = {
+        hu: "Minden adat törölve!",
+        en: "All data cleared!",
+        es: "¡Todos los datos han sido borrados!"
+    };
+    alert(messages[lang]);
 }
 
 function loadFormData() {
