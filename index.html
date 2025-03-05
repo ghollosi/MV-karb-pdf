@@ -7,6 +7,103 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Súgó gomb és modal -->
+    <button id="helpButton">?</button>
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span id="closeHelp" class="close">×</span>
+            <h3>Súgó</h3>
+            <p id="helpContent">
+                MOLINO VILLAS Karbantartás Kalkulátor - Súgó<br><br>
+                Üdvözöljük a MOLINO VILLAS Karbantartás Kalkulátor súgójában! Ez az útmutató segít megérteni, hogyan működik a program, mire szolgálnak a gombok, hogyan számoljuk a költségeket, és mikor frissül a táblázat.<br><br>
+                1. Mi ez a program?<br><br>
+                Ez egy egyszerű kalkulátor, amellyel karbantartási munkák költségeit számolhatod ki és összesítheted. Bevihetsz munkákat, anyagköltségeket, munkaórákat, kiszállási díjat, és végül PDF vagy Excel fájlba mentheted az eredményeket. A program mindent automatikusan ment a böngészőbe, így később is folytathatod a munkát.<br><br>
+                2. Hogyan használd az űrlapokat?<br><br>
+                A program két fő részből áll: az "Egyszer megadandó adatok" és a "Karbantartási munkák" űrlapból.<br><br>
+                Egyszer megadandó adatok<br><br>
+                Itt azokat az információkat adod meg, amelyek az egész ajánlathoz tartoznak:<br><br>
+                Ajánlatkészítő neve: Ki készíti az ajánlatot (pl. a te neved).<br>
+                Ügyfél neve: Kinek készül az ajánlat.<br>
+                Ügyfél címe: Az ügyfél lakcíme vagy a munkavégzés helyszíne.<br>
+                Ügyfél telefonszáma: Az ügyfél elérhetősége (csak számokat írj be!).<br>
+                Ügyfél email címe: Az ügyfél email címe (érvényes formátum: pl. nev@pelda.hu).<br>
+                Ajánlat érvényessége (nap): Hány napig érvényes az ajánlat.<br>
+                Távolság a telephelytől (km): Hány kilométerre van a munkavégzés helye a telephelytől (ez a kiszállási díjhoz kell).<br>
+                Kilométerdíj (€): Mennyibe kerül egy kilométer kiszállás (pl. 0,5 €/km).<br><br>
+                Ezeket az adatokat egyszer kell kitölteni, és a program automatikusan menti őket a böngészőbe.<br><br>
+                Karbantartási munkák<br><br>
+                Itt adhatod fel az egyes munkákat, amelyeket el akarsz végezni:<br><br>
+                Munka megnevezése: A munka rövid neve (pl. "Villanykapcsoló csere").<br>
+                Munka részletes leírása: Mit fogsz csinálni (pl. "Fürdőszobai villanykapcsoló cseréje új darabra").<br>
+                Anyagköltség (€): Mennyibe kerülnek az anyagok (pl. 10 €).<br>
+                Anyagbeszerzési díj (%): Az anyagköltség hány százaléka a beszerzés költsége (pl. 10%).<br>
+                Munkaórák száma (h): Hány órát dolgozol rajta (pl. 2 óra).<br>
+                Munkaóra költsége/fő (€/h): Mennyit kérsz egy óra munkáért (pl. 20 €/óra).<br>
+                Megjegyzés: Bármi, amit még tudni kell (pl. "Sürgős javítás").<br><br>
+                A "Hozzáad" gombbal tudod felvenni a munkát a táblázatba.<br><br>
+                3. Hogyan számol a program?<br><br>
+                A program automatikusan kiszámolja a költségeket az általad megadott adatok alapján. Nézzük meg lépésről lépésre:<br><br>
+                Anyagköltség számítása<br><br>
+                A táblázatban látható anyagköltség nem csak az alapanyag ára, hanem tartalmazza az anyagbeszerzési díjat is.<br><br>
+                Számítás: Anyagköltség = Alapanyag ára × (1 + Anyagbeszerzési díj / 100)<br>
+                Példa: Ha az alapanyag 100 €, és az anyagbeszerzési díj 10%, akkor: 100 × (1 + 10/100) = 100 × 1,1 = 110 €.<br><br>
+                Munkadíj számítása<br><br>
+                A munkadíj a munkaórák és az óradíj szorzata.<br><br>
+                Számítás: Munkadíj = Munkaórák száma × Munkaóra költsége/fő<br>
+                Példa: Ha 2 órát dolgozol, és az óradíjad 20 €/óra, akkor: 2 × 20 = 40 €.<br><br>
+                Összesen (egy munkához)<br><br>
+                Ez az anyagköltség és a munkadíj összege egy adott munkára.<br><br>
+                Számítás: Összesen = Anyagköltség + Munkadíj<br>
+                Példa: Ha az anyagköltség 110 € és a munkadíj 40 €, akkor: 110 + 40 = 150 €.<br><br>
+                Kiszállási díj számítása<br><br>
+                A kiszállási díj bonyolultabb, mert figyelembe veszi a teljes munkaidőt, a távolságot és a kilométerdíjat. A program egy "szorzót" használ, ami attól függ, hány órát dolgozol összesen.<br><br>
+                Ha az összes munkaóra kevesebb, mint 8 óra, akkor a szorzó 8.<br>
+                Ha az összes munkaóra 8 vagy több, akkor a szorzót a legközelebbi 8 többszörösére kerekíti fel (pl. 10 óra → 16, 20 óra → 24).<br><br>
+                Számítás: Kiszállási díj = (Összes munkaóra / Szorzó) × Kilométerdíj × Távolság a telephelytől<br>
+                Példa: Tegyük fel, hogy 5 órát dolgozol összesen, a kilométerdíj 0,5 €/km, és a távolság 50 km.<br>
+                Összes munkaóra = 5, ami kevesebb mint 8, tehát a szorzó = 8.<br>
+                Kiszállási díj = (5 / 8) × 0,5 × 50 = 0,625 × 25 = 15,625 € (kerekítve 15,63 €).<br>
+                Másik példa: Ha 10 órát dolgozol, a szorzó 16 (mert 10 felfelé kerekítve 16).<br>
+                Kiszállási díj = (10 / 16) × 0,5 × 50 = 0,625 × 25 = 15,63 €.<br>
+                Ez azt jelenti, hogy minél többet dolgozol, annál jobban eloszlik a kiszállási költség.<br><br>
+                Összesen (Anyag, Munkadíj, Kiszállás)<br><br>
+                Ez az összes munkád teljes költsége, beleértve az anyagokat, a munkadíjat és a kiszállást.<br><br>
+                Számítás: Összesen = Összes anyagköltség + Összes munkadíj + Kiszállási díj<br>
+                Példa: Ha az összes anyagköltség 200 €, az összes munkadíj 100 €, és a kiszállási díj 15,63 €, akkor: 200 + 100 + 15,63 = 315,63 €.<br><br>
+                4. Mire jók a gombok?<br><br>
+                A programban több gomb segít a munkádban:<br><br>
+                Hozzáad (Karbantartási munkák): Ezzel adsz fel egy új munkát a táblázatba. Ha minden mezőt kitöltöttél helyesen, a munka megjelenik a táblázatban, és a program kiszámolja az összegeket.<br>
+                Törlés (táblázat sorai mellett): Egy munkát törölhetsz vele a táblázatból. Ha rákattintasz, az adott sor eltűnik, és az összesítések frissülnek.<br>
+                Mentés: Az "Egyszer megadandó adatok" űrlap adatait menti el a böngészőbe. Ha később visszatérsz, ezek az adatok automatikusan betöltődnek.<br>
+                Minden adat törlése: Törli az összes felvett adatot (mind az űrlapokat, mind a táblázatot, mind a feltöltött képeket), és újrakezdi a munkát.<br>
+                PDF-be exportálás: PDF fájlba menti az összes adatot, beleértve az "Egyszer megadandó adatokat" és a táblázatot az összesítésekkel együtt.<br>
+                Excel-be exportálás: Excel fájlba menti ugyanezeket az adatokat, ha táblázatos formában szeretnéd tovább használni.<br>
+                Képfeltöltés: Képeket (pl. munkáról készült fotókat) tölthetsz fel. Maximum 20 képet adhatsz fel, és a "Törlés" gombbal eltávolíthatod őket.<br>
+                Súgó (jobb felső sarok): Ezt az útmutatót nyitja meg egy új ablakban, hogy bármikor segítséget kapj.<br><br>
+                5. Mikor frissül a táblázat?<br><br>
+                A táblázat automatikusan frissül az alábbi esetekben:<br><br>
+                Amikor új munkát adsz fel a "Hozzáad" gombbal.<br>
+                Ha törölsz egy munkát a "Törlés" gombbal.<br>
+                Ha módosítod az "Egyszer megadandó adatok" űrlapban a "Távolság a telephelytől" vagy a "Kilométerdíj" mezőt, mert ezek befolyásolják a kiszállási díjat.<br>
+                Az oldal betöltésekor, ha korábban már mentettél adatokat.<br><br>
+                A táblázat alján látható összesítések (pl. "Összes anyagköltség", "Összes munkaóra", "Kiszállási díj") mindig a legfrissebb adatokat mutatják.<br><br>
+                6. Képfeltöltés<br><br>
+                A "Képfeltöltés" mezővel képeket adhatsz fel (pl. a munkáról készült fotókat), maximum 20 darabot. Ezek a képek megjelennek az oldalon, és a "Törlés" gombbal eltávolíthatod őket. A képek a böngésződben tárolódnak, de a PDF-be vagy Excel-be nem kerülnek bele.<br><br>
+                7. Hibák és figyelmeztetések<br><br>
+                A program figyelmeztet, ha valamit rosszul töltesz ki:<br><br>
+                Ha az email cím formátuma hibás (pl. hiányzik a "@"), üzenetet kapsz.<br>
+                Ha a telefonszám nem csak számokat tartalmaz, szintén figyelmeztet.<br>
+                Ha az anyagköltség vagy a munkaórák negatívak, nem engedi feladni a munkát.<br>
+                Ha 20-nál több képet próbálsz feltölteni, nem fogadja el.<br><br>
+                8. Tippek a használathoz<br><br>
+                Mindig ellenőrizd az adatokat, mielőtt PDF-be vagy Excel-be mented!<br>
+                Ha új ajánlatot kezdesz, használd a "Minden adat törlése" gombot, hogy tiszta lappal indulj.<br>
+                Ha hosszabb leírást írsz a "Munka részletes leírása" mezőbe, a PDF-ben automatikusan tördelődik, hogy elférjen.<br>
+                Ha további kérdésed van, bátran kísérletezz a programmal – minden adat mentve marad a böngésződben, amíg nem törlöd!
+            </p>
+        </div>
+    </div>
+
     <h2>MOLINO VILLAS Karbantartás Kalkulátor</h2>
 
     <!-- Egyszer megadandó adatok -->
@@ -31,6 +128,9 @@
             <label for="validityDays">Ajánlat érvényessége (nap):</label><br>
             <input type="number" id="validityDays" name="validityDays" required><br><br>
 
+            <label for="distanceFromBase">Távolság a telephelytől (km):</label><br>
+            <input type="number" id="distanceFromBase" name="distanceFromBase" min="0" step="0.1" required><br><br>
+
             <button type="button" onclick="saveFormData()">Adatok mentése</button>
             <button type="button" onclick="clearFormData()">Adatok törlése</button>
         </form>
@@ -43,13 +143,19 @@
             <label for="workName">Munka megnevezése:</label><br>
             <input type="text" id="workName" name="workName" required><br><br>
 
+            <label for="workDescription">Munka részletes leírása:</label><br>
+            <textarea id="workDescription" name="workDescription" rows="5" maxlength="500" required></textarea><br><br>
+
             <label for="materialCost">Anyagköltség (€):</label><br>
             <input type="number" id="materialCost" name="materialCost" required><br><br>
+
+            <label for="materialProcurementFee">Anyagbeszerzési díj (%):</label><br>
+            <input type="number" id="materialProcurementFee" name="materialProcurementFee" min="0" step="0.1" value="15" required><br><br>
 
             <label for="workHours">Munkaórák száma (h):</label><br>
             <input type="number" id="workHours" name="workHours" required><br><br>
 
-            <label for="hourlyRate">Munkaóra költsége (€/h):</label><br>
+            <label for="hourlyRate">Munkaóra költsége/ fő (€/h):</label><br>
             <input type="number" id="hourlyRate" name="hourlyRate" required><br><br>
 
             <label for="notes">Megjegyzés:</label><br>
@@ -64,33 +170,34 @@
         <thead>
             <tr>
                 <th class="info-column">Ajánlatkészítő:</th>
-                <td colspan="6"><span id="displayOffererName"></span></td>
+                <td colspan="8"><span id="displayOffererName"></span></td>
             </tr>
             <tr>
                 <th class="info-column">Ügyfél neve:</th>
-                <td colspan="6"><span id="displayClientName"></span></td>
+                <td colspan="8"><span id="displayClientName"></span></td>
             </tr>
             <tr>
                 <th class="info-column">Ügyfél címe:</th>
-                <td colspan="6"><span id="displayClientAddress"></span></td>
+                <td colspan="8"><span id="displayClientAddress"></span></td>
             </tr>
             <tr>
                 <th class="info-column">Ügyfél telefonszáma:</th>
-                <td colspan="6"><span id="displayClientPhone"></span></td>
+                <td colspan="8"><span id="displayClientPhone"></span></td>
             </tr>
             <tr>
                 <th class="info-column">Ügyfél email címe:</th>
-                <td colspan="6"><span id="displayClientEmail"></span></td>
+                <td colspan="8"><span id="displayClientEmail"></span></td>
             </tr>
             <tr>
                 <th class="info-column">Ajánlat érvényessége (nap):</th>
-                <td colspan="6"><span id="displayValidityDays"></span></td>
+                <td colspan="8"><span id="displayValidityDays"></span></td>
             </tr>
             <tr>
                 <th>Munka megnevezése</th>
+                <th>Munka részletes leírása</th>
                 <th>Anyagköltség (€)</th>
                 <th>Munkaórák száma (h)</th>
-                <th>Munkaóra költsége (€/h)</th>
+                <th>Munkaóra költsége/ fő (€/h)</th>
                 <th>Munkadíj (€)</th>
                 <th>Megjegyzés</th>
                 <th>Összesen (€)</th>
@@ -102,12 +209,32 @@
         <tfoot>
             <tr>
                 <td><strong>Összesen:</strong></td>
+                <td></td> <!-- Üres oszlop a Munka részletes leírása miatt -->
                 <td id="totalMaterialCost">0</td>
                 <td id="totalWorkHours">0</td>
                 <td></td>
                 <td id="totalLaborCost">0</td>
                 <td></td>
                 <td id="totalOverallCost">0</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><strong>Kilométerdíj (€):</strong></td>
+                <td colspan="7">
+                    <input type="number" id="travelRate" name="travelRate" min="0" step="0.01" oninput="RecordManager.calculateTravelCost()">
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><strong>Kiszállási díj (€):</strong></td>
+                <td colspan="6"></td>
+                <td id="travelCost">0</td>
+                <td></td>
+            </tr>
+            <tr id="grandTotalRow">
+                <td><strong>Összesen (Anyag, Munkadíj, Kiszállás):</strong></td>
+                <td colspan="6"></td>
+                <td id="grandTotal">0</td>
                 <td></td>
             </tr>
         </tfoot>
