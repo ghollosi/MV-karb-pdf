@@ -4,15 +4,29 @@ const RecordManager = {
         if (!validateForm()) return;
 
         const workName = document.getElementById('workName').value;
+        const workDescription = document.getElementById('workDescription').value;
         const materialCost = parseFloat(document.getElementById('materialCost').value);
+        const materialProcurementFee = parseFloat(document.getElementById('materialProcurementFee').value);
         const workHours = parseFloat(document.getElementById('workHours').value);
         const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
         const notes = document.getElementById('notes').value;
 
-        if (workName && !isNaN(materialCost) && !isNaN(workHours) && !isNaN(hourlyRate) && notes) {
+        if (workName && workDescription && !isNaN(materialCost) && !isNaN(materialProcurementFee) && !isNaN(workHours) && !isNaN(hourlyRate) && notes) {
+            const adjustedMaterialCost = materialCost * (1 + materialProcurementFee / 100);
             const laborCost = workHours * hourlyRate;
-            const totalCost = materialCost + laborCost;
-            this.records.push({ workName, materialCost, workHours, hourlyRate, laborCost, notes, totalCost });
+            const totalCost = adjustedMaterialCost + laborCost;
+            this.records.push({ 
+                workName, 
+                workDescription, 
+                materialCost: adjustedMaterialCost,
+                rawMaterialCost: materialCost,
+                materialProcurementFee,
+                workHours, 
+                hourlyRate, 
+                laborCost, 
+                notes, 
+                totalCost 
+            });
             localStorage.setItem('records', JSON.stringify(this.records));
             this.updateTable();
             document.getElementById('maintenanceForm').reset();
@@ -32,6 +46,7 @@ const RecordManager = {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${record.workName}</td>
+                <td>${record.workDescription}</td>
                 <td>${record.materialCost.toFixed(2)}</td>
                 <td>${record.workHours.toFixed(2)}</td>
                 <td>${record.hourlyRate.toFixed(2)}</td>
@@ -43,12 +58,14 @@ const RecordManager = {
             tableBody.appendChild(row);
         });
         this.updateTotals();
+        this.calculateTravelCost();
     },
     updateTotals: function () {
         const totalMaterialCost = document.getElementById('totalMaterialCost');
         const totalWorkHours = document.getElementById('totalWorkHours');
         const totalLaborCost = document.getElementById('totalLaborCost');
         const totalOverallCost = document.getElementById('totalOverallCost');
+        const grandTotal = document.getElementById('grandTotal');
 
         let totalMaterial = 0, totalHours = 0, totalLabor = 0, totalOverall = 0;
         this.records.forEach(record => {
@@ -63,6 +80,10 @@ const RecordManager = {
         totalLaborCost.textContent = totalLabor.toFixed(2);
         totalOverallCost.textContent = totalOverall.toFixed(2);
 
+        const travelCost = parseFloat(document.getElementById('travelCost').textContent) || 0;
+        const grandTotalValue = totalMaterial + totalLabor + travelCost;
+        grandTotal.textContent = grandTotalValue.toFixed(2);
+
         document.getElementById('displayOffererName').textContent = document.getElementById('offererName').value;
         document.getElementById('displayClientName').textContent = document.getElementById('clientName').value;
         document.getElementById('displayClientAddress').textContent = document.getElementById('clientAddress').value;
@@ -70,142 +91,155 @@ const RecordManager = {
         document.getElementById('displayClientEmail').textContent = document.getElementById('clientEmail').value;
         document.getElementById('displayValidityDays').textContent = document.getElementById('validityDays').value;
     },
+    calculateTravelCost: function () {
+        const totalWorkHours = parseFloat(document.getElementById('totalWorkHours').textContent) || 0;
+        const travelRate = parseFloat(document.getElementById('travelRate').value) || 0;
+        const distanceFromBase = parseFloat(document.getElementById('distanceFromBase').value) || 0;
+
+        let multiplier = totalWorkHours;
+        if (totalWorkHours < 8) {
+            multiplier = 8;
+        } else {
+            multiplier = Math.ceil(totalWorkHours / 8) * 8;
+        }
+
+        const travelCost = totalWorkHours / multiplier * travelRate * distanceFromBase;
+        document.getElementById('travelCost').textContent = travelCost.toFixed(2);
+
+        this.updateTotals();
+    },
     exportToPDF: function () {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        doc.setFontSize(18);
-        doc.text('MOLINO VILLAS Karbantartás Kalkulátor', 10, 10);
-
+        const doc = new jsPDF({ orientation: 'portrait' });
+    
+        doc.setFont("Courier", "normal");
+    
+        // Függvény az ékezetes betűk cseréjére
+        const replaceHungarianChars = (text) => {
+            return text
+                .replace(/ő/g, 'o')
+                .replace(/Ő/g, 'O')
+                .replace(/ű/g, 'u')
+                .replace(/Ű/g, 'U');
+        };
+    
+        // Cím
+        doc.setFontSize(15);
+        doc.text(replaceHungarianChars('MOLINO VILLAS Karbantartás Kalkulátor'), 10, 10);
+    
+        // Generálási dátum
+        doc.setFontSize(8);
         const currentDate = new Date().toLocaleString();
-        doc.setFontSize(10);
         doc.text(`Generálva: ${currentDate}`, 10, 20);
-
-        doc.setFontSize(12);
-        doc.text(`Ajánlatkészítő: ${document.getElementById('offererName').value}`, 10, 30);
-        doc.text(`Ügyfél neve: ${document.getElementById('clientName').value}`, 10, 40);
-        doc.text(`Ügyfél címe: ${document.getElementById('clientAddress').value}`, 10, 50);
-        doc.text(`Ügyfél telefonszáma: ${document.getElementById('clientPhone').value}`, 10, 60);
-        doc.text(`Ügyfél email címe: ${document.getElementById('clientEmail').value}`, 10, 70);
-        doc.text(`Ajánlat érvényessége: ${document.getElementById('validityDays').value} nap`, 10, 80);
-
+    
+        // Egyszer megadandó adatok minimális sorközzel
+        doc.setFontSize(9);
+        let yPos = 30;
+        const lineHeight = 5;
+        doc.text(replaceHungarianChars(`Ajánlatkészítő: ${document.getElementById('offererName').value}`), 10, yPos);
+        yPos += lineHeight;
+        doc.text(replaceHungarianChars(`Ügyfél neve: ${document.getElementById('clientName').value}`), 10, yPos);
+        yPos += lineHeight;
+        doc.text(replaceHungarianChars(`Ügyfél címe: ${document.getElementById('clientAddress').value}`), 10, yPos);
+        yPos += lineHeight;
+        doc.text(replaceHungarianChars(`Ügyfél telefonszáma: ${document.getElementById('clientPhone').value}`), 10, yPos);
+        yPos += lineHeight;
+        doc.text(replaceHungarianChars(`Ügyfél email címe: ${document.getElementById('clientEmail').value}`), 10, yPos);
+        yPos += lineHeight;
+        doc.text(replaceHungarianChars(`Ajánlat érvényessége: ${document.getElementById('validityDays').value} nap`), 10, yPos);
+        yPos += lineHeight;
+        doc.text(replaceHungarianChars(`Távolság a telephelytől: ${document.getElementById('distanceFromBase').value} km`), 10, yPos);
+    
+        const tableStartY = yPos + 10;
+    
         const headers = [
             "Munka megnevezése",
+            "Munka részletes leírása",
             "Anyagköltség (€)",
             "Munkaórák száma (h)",
-            "Munkaóra költsége (€/h)",
+            "Munkaóra költsége/ fő (€/h)",
             "Munkadíj (€)",
             "Megjegyzés",
             "Összesen (€)"
-        ];
+        ].map(replaceHungarianChars);
+    
         const data = this.records.map(record => [
-            record.workName,
+            replaceHungarianChars(record.workName),
+            replaceHungarianChars(record.workDescription),
             record.materialCost.toFixed(2),
             record.workHours.toFixed(2),
             record.hourlyRate.toFixed(2),
             record.laborCost.toFixed(2),
-            record.notes,
+            replaceHungarianChars(record.notes),
             record.totalCost.toFixed(2)
         ]);
-
+    
         doc.autoTable({
             head: [headers],
             body: data,
-            startY: 90,
+            startY: tableStartY,
             theme: 'striped',
             styles: {
-                fontSize: 10,
+                font: "Courier",
+                fontSize: 7,
                 cellPadding: 2,
                 textColor: [0, 0, 0],
                 fillColor: [255, 255, 255],
+                lineWidth: 0.1,
+                overflow: 'linebreak',
             },
             headStyles: {
                 fillColor: [51, 51, 51],
                 textColor: [255, 255, 255],
+                font: "Courier",
+                fontSize: 7,
             },
             columnStyles: {
-                0: { cellWidth: 'auto' },
-                1: { cellWidth: 'auto' },
-                2: { cellWidth: 'auto' },
-                3: { cellWidth: 'auto' },
-                4: { cellWidth: 'auto' },
-                5: { cellWidth: 'auto' },
-                6: { cellWidth: 'auto' },
+                0: { cellWidth: 23 },
+                1: { cellWidth: 42 },
+                2: { cellWidth: 18 },
+                3: { cellWidth: 18 },
+                4: { cellWidth: 18 },
+                5: { cellWidth: 18 },
+                6: { cellWidth: 33 },
+                7: { cellWidth: 20 },
             },
-            margin: { top: 90 },
         });
-
+    
         const totals = [
-            "Összesen:",
-            document.getElementById('totalMaterialCost').textContent,
-            document.getElementById('totalWorkHours').textContent,
-            "",
-            document.getElementById('totalLaborCost').textContent,
-            "",
-            document.getElementById('totalOverallCost').textContent
-        ];
+            ["Összesen:", "", document.getElementById('totalMaterialCost').textContent, document.getElementById('totalWorkHours').textContent, "", document.getElementById('totalLaborCost').textContent, "", document.getElementById('totalOverallCost').textContent],
+            ["Kilométerdíj (€):", document.getElementById('travelRate').value || "0", "", "", "", "", "", ""],
+            ["Kiszállási díj (€):", "", "", "", "", "", "", document.getElementById('travelCost').textContent],
+            ["Összesen (Anyag, Munkadíj, Kiszállás):", "", "", "", "", "", "", document.getElementById('grandTotal').textContent]
+        ].map(row => row.map(cell => typeof cell === 'string' ? replaceHungarianChars(cell) : cell));
+    
         doc.autoTable({
-            body: [totals],
+            body: totals,
             startY: doc.lastAutoTable.finalY + 10,
             theme: 'plain',
             styles: {
-                fontSize: 10,
+                font: "Courier",
+                fontSize: 7,
                 cellPadding: 2,
                 textColor: [0, 0, 0],
                 fillColor: [255, 255, 255],
+                lineWidth: 0.1,
+                overflow: 'linebreak',
+                fontStyle: 'bold'
             },
             columnStyles: {
-                0: { fontStyle: 'bold' },
+                0: { cellWidth: 23 },
+                1: { cellWidth: 42 },
+                2: { cellWidth: 18 },
+                3: { cellWidth: 18 },
+                4: { cellWidth: 18 },
+                5: { cellWidth: 18 },
+                6: { cellWidth: 33 },
+                7: { cellWidth: 20 },
             },
         });
-
+    
         doc.save('molino_villas_karbantartas_osszesites.pdf');
-    },
-    exportToExcel: function () {
-        const workbook = XLSX.utils.book_new();
-
-        const infoData = [
-            ["Ajánlatkészítő neve:", document.getElementById('offererName').value],
-            ["Ügyfél neve:", document.getElementById('clientName').value],
-            ["Ügyfél címe:", document.getElementById('clientAddress').value],
-            ["Ügyfél telefonszáma:", document.getElementById('clientPhone').value],
-            ["Ügyfél email címe:", document.getElementById('clientEmail').value],
-            ["Ajánlat érvényessége (nap):", document.getElementById('validityDays').value],
-            [],
-        ];
-
-        const headers = [
-            "Munka megnevezése",
-            "Anyagköltség (€)",
-            "Munkaórák száma (h)",
-            "Munkaóra költsége (€/h)",
-            "Munkadíj (€)",
-            "Megjegyzés",
-            "Összesen (€)"
-        ];
-        const data = this.records.map(record => [
-            record.workName,
-            record.materialCost.toFixed(2),
-            record.workHours.toFixed(2),
-            record.hourlyRate.toFixed(2),
-            record.laborCost.toFixed(2),
-            record.notes,
-            record.totalCost.toFixed(2)
-        ]);
-
-        const totals = [
-            ["Összesen:"],
-            ["Anyagköltség (€):", document.getElementById('totalMaterialCost').textContent],
-            ["Munkaórák száma (h):", document.getElementById('totalWorkHours').textContent],
-            ["Munkadíj (€):", document.getElementById('totalLaborCost').textContent],
-            ["Teljes költség (€):", document.getElementById('totalOverallCost').textContent],
-        ];
-
-        const excelData = [...infoData, headers, ...data, [], ...totals];
-
-        const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Karbantartási munkák");
-        XLSX.writeFile(workbook, 'molino_villas_karbantartas_osszesites.xlsx');
     },
 };
 
@@ -287,6 +321,7 @@ function saveFormData() {
         clientPhone: document.getElementById('clientPhone').value,
         clientEmail: document.getElementById('clientEmail').value,
         validityDays: document.getElementById('validityDays').value,
+        distanceFromBase: document.getElementById('distanceFromBase').value,
     };
     localStorage.setItem('formData', JSON.stringify(formData));
     alert('Adatok mentve!');
@@ -317,8 +352,26 @@ function loadFormData() {
         document.getElementById('clientPhone').value = savedData.clientPhone || '';
         document.getElementById('clientEmail').value = savedData.clientEmail || '';
         document.getElementById('validityDays').value = savedData.validityDays || '';
+        document.getElementById('distanceFromBase').value = savedData.distanceFromBase || '';
     }
 }
+
+// Súgó gomb és modal kezelése
+document.getElementById('helpButton').onclick = function() {
+    document.getElementById('helpModal').style.display = 'block';
+};
+
+document.getElementById('closeHelp').onclick = function() {
+    document.getElementById('helpModal').style.display = 'none';
+};
+
+// Modal bezárása, ha a felhasználó a modalon kívülre kattint
+window.onclick = function(event) {
+    const modal = document.getElementById('helpModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+};
 
 window.onload = function () {
     loadFormData();
