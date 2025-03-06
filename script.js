@@ -5,27 +5,40 @@ const RecordManager = {
 
         const workName = document.getElementById('workName').value;
         const workDescription = document.getElementById('workDescription').value;
-        const materialCost = parseFloat(document.getElementById('materialCost').value);
+        const netMaterialCost = parseFloat(document.getElementById('materialCost').value);
         const materialProcurementFee = parseFloat(document.getElementById('materialProcurementFee').value);
         const workHours = parseFloat(document.getElementById('workHours').value);
-        const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
+        const netHourlyRate = parseFloat(document.getElementById('hourlyRate').value);
         const notes = document.getElementById('notes').value;
+        const vatRate = parseFloat(document.getElementById('vatRate').value) / 100 || 0.21;
 
-        if (workName && workDescription && !isNaN(materialCost) && !isNaN(materialProcurementFee) && !isNaN(workHours) && !isNaN(hourlyRate) && notes) {
-            const adjustedMaterialCost = materialCost * (1 + materialProcurementFee / 100);
-            const laborCost = workHours * hourlyRate;
-            const totalCost = adjustedMaterialCost + laborCost;
+        if (workName && workDescription && !isNaN(netMaterialCost) && !isNaN(materialProcurementFee) && !isNaN(workHours) && !isNaN(netHourlyRate) && notes) {
+            const adjustedNetMaterialCost = netMaterialCost * (1 + materialProcurementFee / 100);
+            const materialVat = adjustedNetMaterialCost * vatRate;
+            const grossMaterialCost = adjustedNetMaterialCost + materialVat;
+            const netLaborCost = workHours * netHourlyRate;
+            const laborVat = netLaborCost * vatRate;
+            const grossLaborCost = netLaborCost + laborVat;
+            const netTotal = adjustedNetMaterialCost + netLaborCost;
+            const totalVat = materialVat + laborVat;
+            const grossTotal = netTotal + totalVat;
+
             this.records.push({ 
                 workName, 
                 workDescription, 
-                materialCost: adjustedMaterialCost,
-                rawMaterialCost: materialCost,
-                materialProcurementFee,
+                netMaterialCost: adjustedNetMaterialCost,
+                materialVat,
+                grossMaterialCost,
                 workHours, 
-                hourlyRate, 
-                laborCost, 
-                notes, 
-                totalCost 
+                netHourlyRate, 
+                netLaborCost,
+                laborVat,
+                grossLaborCost,
+                notes,
+                netTotal,
+                totalVat,
+                grossTotal,
+                vatRate: vatRate * 100 // Százalékban tároljuk
             });
             localStorage.setItem('records', JSON.stringify(this.records));
             this.updateTable();
@@ -48,47 +61,80 @@ const RecordManager = {
     updateTable: function () {
         const tableBody = document.querySelector('#summaryTable tbody');
         tableBody.innerHTML = '';
+        const vatRate = parseFloat(document.getElementById('vatRate').value) / 100 || 0.21;
+
         this.records.forEach((record, index) => {
+            // Frissítjük az IVA-t az aktuális áfakulcs alapján
+            record.materialVat = record.netMaterialCost * vatRate;
+            record.grossMaterialCost = record.netMaterialCost + record.materialVat;
+            record.laborVat = record.netLaborCost * vatRate;
+            record.grossLaborCost = record.netLaborCost + record.laborVat;
+            record.totalVat = record.materialVat + record.laborVat;
+            record.grossTotal = record.netTotal + record.totalVat;
+            record.vatRate = vatRate * 100;
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${record.workName}</td>
                 <td>${record.workDescription}</td>
-                <td>${record.materialCost.toFixed(2)}</td>
+                <td>${record.netMaterialCost.toFixed(2)}</td>
+                <td>${record.materialVat.toFixed(2)}</td>
+                <td>${record.grossMaterialCost.toFixed(2)}</td>
                 <td>${record.workHours.toFixed(2)}</td>
-                <td>${record.hourlyRate.toFixed(2)}</td>
-                <td>${record.laborCost.toFixed(2)}</td>
+                <td>${record.netHourlyRate.toFixed(2)}</td>
+                <td>${record.netLaborCost.toFixed(2)}</td>
+                <td>${record.laborVat.toFixed(2)}</td>
+                <td>${record.grossLaborCost.toFixed(2)}</td>
                 <td>${record.notes}</td>
-                <td>${record.totalCost.toFixed(2)}</td>
                 <td><button onclick="RecordManager.deleteRecord(${index})">Törlés</button></td>
             `;
             tableBody.appendChild(row);
         });
+        localStorage.setItem('records', JSON.stringify(this.records));
         this.updateTotals();
-        this.calculateTravelCost();
     },
     updateTotals: function () {
-        const totalMaterialCost = document.getElementById('totalMaterialCost');
+        const totalNetMaterialCost = document.getElementById('totalNetMaterialCost');
+        const totalMaterialVat = document.getElementById('totalMaterialVat');
+        const totalGrossMaterialCost = document.getElementById('totalGrossMaterialCost');
         const totalWorkHours = document.getElementById('totalWorkHours');
-        const totalLaborCost = document.getElementById('totalLaborCost');
-        const totalOverallCost = document.getElementById('totalOverallCost');
-        const grandTotal = document.getElementById('grandTotal');
+        const totalNetLaborCost = document.getElementById('totalNetLaborCost');
+        const totalLaborVat = document.getElementById('totalLaborVat');
+        const totalGrossLaborCost = document.getElementById('totalGrossLaborCost');
+        const grandNetTotal = document.getElementById('grandNetTotal');
+        const grandVatTotal = document.getElementById('grandVatTotal');
+        const grandGrossTotal = document.getElementById('grandGrossTotal');
 
-        let totalMaterial = 0, totalHours = 0, totalLabor = 0, totalOverall = 0;
+        let netMaterial = 0, materialVat = 0, grossMaterial = 0, hours = 0, netLabor = 0, laborVat = 0, grossLabor = 0;
         this.records.forEach(record => {
-            totalMaterial += record.materialCost;
-            totalHours += record.workHours;
-            totalLabor += record.laborCost;
-            totalOverall += record.totalCost;
+            netMaterial += record.netMaterialCost;
+            materialVat += record.materialVat;
+            grossMaterial += record.grossMaterialCost;
+            hours += record.workHours;
+            netLabor += record.netLaborCost;
+            laborVat += record.laborVat;
+            grossLabor += record.grossLaborCost;
         });
 
-        totalMaterialCost.textContent = totalMaterial.toFixed(2);
-        totalWorkHours.textContent = totalHours.toFixed(2);
-        totalLaborCost.textContent = totalLabor.toFixed(2);
-        totalOverallCost.textContent = totalOverall.toFixed(2);
+        totalNetMaterialCost.textContent = netMaterial.toFixed(2);
+        totalMaterialVat.textContent = materialVat.toFixed(2);
+        totalGrossMaterialCost.textContent = grossMaterial.toFixed(2);
+        totalWorkHours.textContent = hours.toFixed(2);
+        totalNetLaborCost.textContent = netLabor.toFixed(2);
+        totalLaborVat.textContent = laborVat.toFixed(2);
+        totalGrossLaborCost.textContent = grossLabor.toFixed(2);
 
-        const travelCost = parseFloat(document.getElementById('travelCost').textContent) || 0;
-        const grandTotalValue = totalMaterial + totalLabor + travelCost;
-        grandTotal.textContent = grandTotalValue.toFixed(2);
+        const netTravelCost = parseFloat(document.getElementById('netTravelCost').textContent) || 0;
+        const travelVat = parseFloat(document.getElementById('travelVat').textContent) || 0;
+        const grossTravelCost = parseFloat(document.getElementById('grossTravelCost').textContent) || 0;
+
+        const grandNet = netMaterial + netLabor + netTravelCost;
+        const grandVat = materialVat + laborVat + travelVat;
+        const grandGross = grossMaterial + grossLabor + grossTravelCost;
+
+        grandNetTotal.textContent = grandNet.toFixed(2);
+        grandVatTotal.textContent = grandVat.toFixed(2);
+        grandGrossTotal.textContent = grandGross.toFixed(2);
 
         document.getElementById('displayOffererName').textContent = document.getElementById('offererName').value;
         document.getElementById('displayClientName').textContent = document.getElementById('clientName').value;
@@ -99,8 +145,9 @@ const RecordManager = {
     },
     calculateTravelCost: function () {
         const totalWorkHours = parseFloat(document.getElementById('totalWorkHours').textContent) || 0;
-        const travelRate = parseFloat(document.getElementById('travelRate').value) || 0;
+        const netTravelRate = parseFloat(document.getElementById('travelRate').value) || 0;
         const distanceFromBase = parseFloat(document.getElementById('distanceFromBase').value) || 0;
+        const vatRate = parseFloat(document.getElementById('vatRate').value) / 100 || 0.21;
 
         let multiplier = totalWorkHours;
         if (totalWorkHours < 8) {
@@ -109,14 +156,20 @@ const RecordManager = {
             multiplier = Math.ceil(totalWorkHours / 8) * 8;
         }
 
-        const travelCost = totalWorkHours / multiplier * travelRate * distanceFromBase;
-        document.getElementById('travelCost').textContent = travelCost.toFixed(2);
+        const netTravelCost = totalWorkHours / multiplier * netTravelRate * distanceFromBase;
+        const travelVat = netTravelCost * vatRate;
+        const grossTravelCost = netTravelCost + travelVat;
+
+        document.getElementById('netTravelCost').textContent = netTravelCost.toFixed(2);
+        document.getElementById('travelVat').textContent = travelVat.toFixed(2);
+        document.getElementById('grossTravelCost').textContent = grossTravelCost.toFixed(2);
 
         this.updateTotals();
     },
     exportToPDF: function () {
         const { jsPDF } = window.jspdf;
         const language = document.getElementById('languageSelect').value;
+        const vatRate = parseFloat(document.getElementById('vatRate').value) || 21;
 
         if (this.records.length === 0) {
             const messages = {
@@ -128,10 +181,9 @@ const RecordManager = {
             return;
         }
 
-        // Nyelvspecifikus szövegek
         const translations = {
             hu: {
-                title: "MOLINO VILLAS Karbantartás Kalkulátor (Bruttó)",
+                title: "MOLINO VILLAS Karbantartás Kalkulátor (Nettó)",
                 generated: "Generálva",
                 offerer: "Ajánlatkészítő",
                 clientName: "Ügyfél neve",
@@ -145,24 +197,28 @@ const RecordManager = {
                 headers: [
                     "Munka megnevezése",
                     "Munka részletes leírása",
-                    "Anyagköltség (€, bruttó)",
+                    "Nettó anyagköltség (€)",
+                    `IVA (${vatRate}%)`,
+                    "Bruttó anyagköltség (€)",
                     "Munkaórák száma (h)",
-                    "Munkaóra költsége/ fő (€/h, bruttó)",
-                    "Munkadíj (€, bruttó)",
-                    "Megjegyzés",
-                    "Összesen (€, bruttó)"
+                    "Nettó munkaóra költsége/fő (€/h)",
+                    "Nettó munkadíj (€)",
+                    `IVA (${vatRate}%)`,
+                    "Bruttó munkadíj (€)",
+                    "Megjegyzés"
                 ],
                 totals: [
-                    "Összesen:",
-                    "Kilométerdíj (€, bruttó):",
-                    "Kiszállási díj (€, bruttó):",
-                    "Összesen (Anyag, Munkadíj, Kiszállás, bruttó):"
+                    "Kilométerdíj (€, nettó):",
+                    "Kiszállási díj (€):",
+                    "Összesen munkadíj (€):",
+                    "Összesen anyagköltség (€):",
+                    "Összesen (Anyag, Munkadíj, Kiszállás):"
                 ],
-                note: "A feltüntetett összegek az ÁFA-t tartalmazzák.",
-                filename: "molino_villas_karbantartas_osszesites_brutto_hu.pdf"
+                note: `A nettó összegek IVA nélkül értendők. Az IVA mértéke ${vatRate}%.`,
+                filename: "molino_villas_karbantartas_osszesites_netto_hu.pdf"
             },
             en: {
-                title: "MOLINO VILLAS Maintenance Calculator (Gross)",
+                title: "MOLINO VILLAS Maintenance Calculator (Net)",
                 generated: "Generated",
                 offerer: "Offer prepared by",
                 clientName: "Client name",
@@ -176,24 +232,28 @@ const RecordManager = {
                 headers: [
                     "Work description",
                     "Detailed work description",
-                    "Material cost (€, gross)",
+                    "Net material cost (€)",
+                    `VAT (${vatRate}%)`,
+                    "Gross material cost (€)",
                     "Number of work hours (h)",
-                    "Hourly rate per person (€/h, gross)",
-                    "Labor cost (€, gross)",
-                    "Notes",
-                    "Total (€, gross)"
+                    "Net hourly rate per person (€/h)",
+                    "Net labor cost (€)",
+                    `VAT (${vatRate}%)`,
+                    "Gross labor cost (€)",
+                    "Notes"
                 ],
                 totals: [
-                    "Total:",
-                    "Mileage rate (€, gross):",
-                    "Travel cost (€, gross):",
-                    "Total (Materials, Labor, Travel, gross):"
+                    "Mileage rate (€, net):",
+                    "Travel cost (€):",
+                    "Total labor cost (€):",
+                    "Total material cost (€):",
+                    "Total (Materials, Labor, Travel):"
                 ],
-                note: "The amounts shown include VAT.",
-                filename: "molino_villas_maintenance_summary_gross_en.pdf"
+                note: `Net amounts are exclusive of VAT. The VAT rate is ${vatRate}%.`,
+                filename: "molino_villas_maintenance_summary_net_en.pdf"
             },
             es: {
-                title: "Calculadora de Mantenimiento MOLINO VILLAS (Bruto)",
+                title: "Calculadora de Mantenimiento MOLINO VILLAS (Neto)",
                 generated: "Generado",
                 offerer: "Preparado por",
                 clientName: "Nombre del cliente",
@@ -207,21 +267,25 @@ const RecordManager = {
                 headers: [
                     "Descripción del trabajo",
                     "Descripción detallada del trabajo",
-                    "Costo de materiales (€, bruto)",
+                    "Costo neto de materiales (€)",
+                    `IVA (${vatRate}%)`,
+                    "Costo bruto de materiales (€)",
                     "Número de horas de trabajo (h)",
-                    "Tarifa horaria por persona (€/h, bruto)",
-                    "Costo de mano de obra (€, bruto)",
-                    "Notas",
-                    "Total (€, bruto)"
+                    "Tarifa horaria neta por persona (€/h)",
+                    "Costo neto de mano de obra (€)",
+                    `IVA (${vatRate}%)`,
+                    "Costo bruto de mano de obra (€)",
+                    "Notas"
                 ],
                 totals: [
-                    "Total:",
-                    "Tarifa por kilómetro (€, bruto):",
-                    "Costo de desplazamiento (€, bruto):",
-                    "Total (Materiales, Mano de obra, Desplazamiento, bruto):"
+                    "Tarifa por kilómetro (€, neto):",
+                    "Costo de desplazamiento (€):",
+                    "Costo total de mano de obra (€):",
+                    "Costo total de materiales (€):",
+                    "Total (Materiales, Mano de obra, Desplazamiento):"
                 ],
-                note: "Los importes indicados incluyen el IVA.",
-                filename: "molino_villas_resumen_mantenimiento_bruto_es.pdf"
+                note: `Los importes netos no incluyen IVA. La tasa de IVA es del ${vatRate}%.`,
+                filename: "molino_villas_resumen_mantenimiento_neto_es.pdf"
             }
         };
 
@@ -229,7 +293,6 @@ const RecordManager = {
         const doc = new jsPDF({ orientation: 'portrait' });
         doc.setFont("Courier", "normal");
 
-        // Függvény az ékezetes betűk cseréjére (csak magyar nyelvnél)
         const replaceHungarianChars = (text) => {
             if (language === 'hu') {
                 return text
@@ -241,16 +304,13 @@ const RecordManager = {
             return text;
         };
 
-        // Cím
         doc.setFontSize(15);
         doc.text(replaceHungarianChars(selectedLang.title), 10, 10);
 
-        // Generálási dátum
         doc.setFontSize(8);
         const currentDate = new Date().toLocaleString();
         doc.text(replaceHungarianChars(`${selectedLang.generated}: ${currentDate}`), 10, 20);
 
-        // Egyszer megadandó adatok
         doc.setFontSize(9);
         let yPos = 30;
         const lineHeight = 5;
@@ -273,22 +333,36 @@ const RecordManager = {
         const data = this.records.map(record => [
             record.workName,
             record.workDescription,
-            record.materialCost.toFixed(2),
+            record.netMaterialCost.toFixed(2),
+            record.materialVat.toFixed(2),
+            record.grossMaterialCost.toFixed(2),
             record.workHours.toFixed(2),
-            record.hourlyRate.toFixed(2),
-            record.laborCost.toFixed(2),
-            record.notes,
-            record.totalCost.toFixed(2)
+            record.netHourlyRate.toFixed(2),
+            record.netLaborCost.toFixed(2),
+            record.laborVat.toFixed(2),
+            record.grossLaborCost.toFixed(2),
+            record.notes
         ]);
+
+        // Összesítés a fő táblázat aljára
+        const totalsForMainTable = ["", "", "", "", "", "", "", "", "", "", ""];
+        totalsForMainTable[2] = document.getElementById('totalNetMaterialCost').textContent; // Nettó anyagköltség
+        totalsForMainTable[3] = document.getElementById('totalMaterialVat').textContent; // IVA anyag
+        totalsForMainTable[4] = document.getElementById('totalGrossMaterialCost').textContent; // Bruttó anyagköltség
+        totalsForMainTable[5] = document.getElementById('totalWorkHours').textContent; // Munkaórák
+        totalsForMainTable[7] = document.getElementById('totalNetLaborCost').textContent; // Nettó munkadíj
+        totalsForMainTable[8] = document.getElementById('totalLaborVat').textContent; // IVA munkadíj
+        totalsForMainTable[9] = document.getElementById('totalGrossLaborCost').textContent; // Bruttó munkadíj
 
         doc.autoTable({
             head: [selectedLang.headers],
             body: data,
+            foot: [totalsForMainTable],
             startY: tableStartY,
             theme: 'striped',
             styles: {
                 font: "Courier",
-                fontSize: 7,
+                fontSize: 6,
                 cellPadding: 2,
                 textColor: [0, 0, 0],
                 fillColor: [255, 255, 255],
@@ -299,25 +373,36 @@ const RecordManager = {
                 fillColor: [51, 51, 51],
                 textColor: [255, 255, 255],
                 font: "Courier",
-                fontSize: 7,
+                fontSize: 6,
+            },
+            footStyles: {
+                fillColor: [200, 200, 200],
+                textColor: [0, 0, 0],
+                font: "Courier",
+                fontSize: 6,
+                fontStyle: 'bold'
             },
             columnStyles: {
-                0: { cellWidth: 23 },
-                1: { cellWidth: 42 },
-                2: { cellWidth: 18 },
-                3: { cellWidth: 18 },
-                4: { cellWidth: 18 },
-                5: { cellWidth: 18 },
-                6: { cellWidth: 33 },
-                7: { cellWidth: 20 },
+                0: { cellWidth: 18 }, // Munka megnevezése
+                1: { cellWidth: 35 }, // Munka részletes leírása
+                2: { cellWidth: 13 }, // Nettó anyagköltség
+                3: { cellWidth: 13 }, // IVA anyag
+                4: { cellWidth: 13 }, // Bruttó anyagköltség
+                5: { cellWidth: 13 }, // Munkaórák száma
+                6: { cellWidth: 13 }, // Nettó munkaóra költsége/fő
+                7: { cellWidth: 13 }, // Nettó munkadíj
+                8: { cellWidth: 13 }, // IVA munkadíj
+                9: { cellWidth: 13 }, // Bruttó munkadíj
+                10: { cellWidth: 25 }, // Megjegyzés
             },
         });
 
         const totals = [
-            [selectedLang.totals[0], "", document.getElementById('totalMaterialCost').textContent, document.getElementById('totalWorkHours').textContent, "", document.getElementById('totalLaborCost').textContent, "", document.getElementById('totalOverallCost').textContent],
-            [selectedLang.totals[1], document.getElementById('travelRate').value || "0", "", "", "", "", "", ""],
-            [selectedLang.totals[2], "", "", "", "", "", "", document.getElementById('travelCost').textContent],
-            [selectedLang.totals[3], "", "", "", "", "", "", document.getElementById('grandTotal').textContent]
+            [selectedLang.totals[0], document.getElementById('travelRate').value || "0", "", "", "", "", "", "", "", "", ""],
+            [selectedLang.totals[1], "", "", "", "", "", "", document.getElementById('netTravelCost').textContent, document.getElementById('travelVat').textContent, document.getElementById('grossTravelCost').textContent, ""],
+            [selectedLang.totals[2], "", "", "", "", "", "", document.getElementById('totalNetLaborCost').textContent, document.getElementById('totalLaborVat').textContent, document.getElementById('totalGrossLaborCost').textContent, ""],
+            [selectedLang.totals[3], "", "", "", "", "", "", document.getElementById('totalNetMaterialCost').textContent, document.getElementById('totalMaterialVat').textContent, document.getElementById('totalGrossMaterialCost').textContent, ""],
+            [selectedLang.totals[4], "", "", "", "", "", "", document.getElementById('grandNetTotal').textContent, document.getElementById('grandVatTotal').textContent, document.getElementById('grandGrossTotal').textContent, ""]
         ];
 
         doc.autoTable({
@@ -326,7 +411,7 @@ const RecordManager = {
             theme: 'plain',
             styles: {
                 font: "Courier",
-                fontSize: 7,
+                fontSize: 6,
                 cellPadding: 2,
                 textColor: [0, 0, 0],
                 fillColor: [255, 255, 255],
@@ -335,23 +420,26 @@ const RecordManager = {
                 fontStyle: 'bold'
             },
             columnStyles: {
-                0: { cellWidth: 23 },
-                1: { cellWidth: 42 },
-                2: { cellWidth: 18 },
-                3: { cellWidth: 18 },
-                4: { cellWidth: 18 },
-                5: { cellWidth: 18 },
-                6: { cellWidth: 33 },
-                7: { cellWidth: 20 },
+                0: { cellWidth: 18 },
+                1: { cellWidth: 35 },
+                2: { cellWidth: 13 },
+                3: { cellWidth: 13 },
+                4: { cellWidth: 13 },
+                5: { cellWidth: 13 },
+                6: { cellWidth: 13 },
+                7: { cellWidth: 13 },
+                8: { cellWidth: 13 },
+                9: { cellWidth: 13 },
+                10: { cellWidth: 25 },
             },
         });
 
-        // Megjegyzés a PDF alján
         doc.setFontSize(8);
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.text(selectedLang.note, 10, finalY);
 
         doc.save(selectedLang.filename);
+        OfferManager.saveOffer();
     },
 };
 
@@ -407,6 +495,83 @@ const PhotoManager = {
     },
 };
 
+const OfferManager = {
+    offers: JSON.parse(localStorage.getItem('savedOffers')) || [],
+    saveOffer: function () {
+        const offerData = {
+            formData: {
+                offererName: document.getElementById('offererName').value,
+                clientName: document.getElementById('clientName').value,
+                clientAddress: document.getElementById('clientAddress').value,
+                clientPhone: document.getElementById('clientPhone').value,
+                clientEmail: document.getElementById('clientEmail').value,
+                validityDays: document.getElementById('validityDays').value,
+                distanceFromBase: document.getElementById('distanceFromBase').value,
+                vatRate: document.getElementById('vatRate').value
+            },
+            records: RecordManager.records,
+            date: new Date().toLocaleString()
+        };
+        this.offers.push(offerData);
+        localStorage.setItem('savedOffers', JSON.stringify(this.offers));
+        this.updateOffersTable();
+    },
+    updateOffersTable: function () {
+        const tableBody = document.querySelector('#offersTable tbody');
+        tableBody.innerHTML = '';
+        if (this.offers.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="4">Nincsenek mentett ajánlatok.</td>';
+            tableBody.appendChild(row);
+        } else {
+            this.offers.forEach((offer, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${offer.formData.offererName}</td>
+                    <td>${offer.formData.clientName}</td>
+                    <td>${offer.date}</td>
+                    <td>
+                        <button onclick="OfferManager.loadOffer(${index})">Betöltés</button>
+                        <button onclick="OfferManager.deleteOffer(${index})">Törlés</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    },
+    loadOffer: function (index) {
+        const offer = this.offers[index];
+        document.getElementById('offererName').value = offer.formData.offererName;
+        document.getElementById('clientName').value = offer.formData.clientName;
+        document.getElementById('clientAddress').value = offer.formData.clientAddress;
+        document.getElementById('clientPhone').value = offer.formData.clientPhone;
+        document.getElementById('clientEmail').value = offer.formData.clientEmail;
+        document.getElementById('validityDays').value = offer.formData.validityDays;
+        document.getElementById('distanceFromBase').value = offer.formData.distanceFromBase;
+        document.getElementById('vatRate').value = offer.formData.vatRate;
+
+        RecordManager.records = offer.records;
+        localStorage.setItem('records', JSON.stringify(RecordManager.records));
+        RecordManager.updateTable();
+        RecordManager.calculateTravelCost();
+
+        document.getElementById('offersModal').style.display = 'none';
+    },
+    deleteOffer: function (index) {
+        const lang = document.getElementById('languageSelect').value;
+        const confirmMessages = {
+            hu: `Biztosan törölni szeretné ezt az ajánlatot? (${this.offers[index].formData.clientName})`,
+            en: `Are you sure you want to delete this offer? (${this.offers[index].formData.clientName})`,
+            es: `¿Está seguro de que desea eliminar esta oferta? (${this.offers[index].formData.clientName})`
+        };
+        if (confirm(confirmMessages[lang])) {
+            this.offers.splice(index, 1);
+            localStorage.setItem('savedOffers', JSON.stringify(this.offers));
+            this.updateOffersTable();
+        }
+    }
+};
+
 function validateForm() {
     const lang = document.getElementById('languageSelect').value;
     const messages = {
@@ -459,6 +624,7 @@ function saveFormData() {
         clientEmail: document.getElementById('clientEmail').value,
         validityDays: document.getElementById('validityDays').value,
         distanceFromBase: document.getElementById('distanceFromBase').value,
+        vatRate: document.getElementById('vatRate').value
     };
     localStorage.setItem('formData', JSON.stringify(formData));
     const lang = document.getElementById('languageSelect').value;
@@ -502,6 +668,7 @@ function loadFormData() {
         document.getElementById('clientEmail').value = savedData.clientEmail || '';
         document.getElementById('validityDays').value = savedData.validityDays || '';
         document.getElementById('distanceFromBase').value = savedData.distanceFromBase || '';
+        document.getElementById('vatRate').value = savedData.vatRate || '21';
     }
 }
 
@@ -514,11 +681,25 @@ document.getElementById('closeHelp').onclick = function() {
     document.getElementById('helpModal').style.display = 'none';
 };
 
+// Korábbi ajánlatok gomb és modal kezelése
+document.getElementById('viewPreviousOffers').onclick = function() {
+    OfferManager.updateOffersTable();
+    document.getElementById('offersModal').style.display = 'block';
+};
+
+document.getElementById('closeOffers').onclick = function() {
+    document.getElementById('offersModal').style.display = 'none';
+};
+
 // Modal bezárása, ha a felhasználó a modalon kívülre kattint
 window.onclick = function(event) {
-    const modal = document.getElementById('helpModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
+    const helpModal = document.getElementById('helpModal');
+    const offersModal = document.getElementById('offersModal');
+    if (event.target === helpModal) {
+        helpModal.style.display = 'none';
+    }
+    if (event.target === offersModal) {
+        offersModal.style.display = 'none';
     }
 };
 
@@ -528,4 +709,6 @@ window.onload = function () {
     RecordManager.updateTable();
     PhotoManager.uploadedPhotos = JSON.parse(localStorage.getItem('uploadedPhotos')) || [];
     PhotoManager.displayPhotos();
+    OfferManager.offers = JSON.parse(localStorage.getItem('savedOffers')) || [];
+    OfferManager.updateOffersTable();
 };
