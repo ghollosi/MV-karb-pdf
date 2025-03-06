@@ -152,6 +152,47 @@ textarea#workDescription {
     background-color: #aaa;
 }
 
+/* Korábbi ajánlatok gomb stílusa */
+#viewPreviousOffers {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #ccc;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#viewPreviousOffers:hover {
+    background-color: #aaa;
+}
+
+/* Korábbi ajánlatok táblázat stílusa */
+#offersTable {
+    width: 100%;
+    margin-top: 10px;
+}
+
+#offersTable th, #offersTable td {
+    padding: 6px;
+    text-align: left;
+}
+
+#offersTable th {
+    background-color: #f2f2f2;
+}
+
+#offersTable td button {
+    padding: 5px 10px;
+    background-color: #ccc;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#offersTable td button:hover {
+    background-color: #aaa;
+}
+
 /* Reszponzív design */
 @media (max-width: 768px) {
     h2 {
@@ -208,6 +249,10 @@ textarea#workDescription {
     #exportButton, #exportExcelButton {
         width: 100%;
     }
+    #offersTable th, #offersTable td {
+        font-size: 12px;
+        padding: 4px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -252,5 +297,9 @@ textarea#workDescription {
         width: 25px;
         height: 25px;
         font-size: 16px;
+    }
+    #offersTable th, #offersTable td {
+        font-size: 10px;
+        padding: 2px;
     }
 }
