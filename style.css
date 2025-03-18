@@ -193,6 +193,42 @@ textarea#workDescription {
     background-color: #aaa;
 }
 
+/* Számolás gomb és szekció stílusa */
+.calculate-section {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+#calculateButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #28a745; /* Zöld szín */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#calculateButton:hover {
+    background-color: #218838; /* Sötétebb zöld hoverhez */
+}
+
+/* Szerkesztés gomb stílusa */
+#summaryTable td button.edit-button {
+    padding: 5px 10px;
+    background-color: #007bff; /* Kék szín a szerkesztéshez */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+#summaryTable td button.edit-button:hover {
+    background-color: #0056b3; /* Sötétebb kék hoverhez */
+}
+
 /* Reszponzív design */
 @media (max-width: 768px) {
     h2 {
@@ -253,6 +289,15 @@ textarea#workDescription {
         font-size: 12px;
         padding: 4px;
     }
+    #calculateButton {
+        width: 100%;
+        font-size: 16px;
+        padding: 10px;
+    }
+    #summaryTable td button.edit-button {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -301,5 +346,13 @@ textarea#workDescription {
     #offersTable th, #offersTable td {
         font-size: 10px;
         padding: 2px;
+    }
+    #calculateButton {
+        font-size: 14px;
+        padding: 8px;
+    }
+    #summaryTable td button.edit-button {
+        padding: 3px 6px;
+        font-size: 10px;
     }
 }
