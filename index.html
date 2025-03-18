@@ -268,8 +268,13 @@
         </tfoot>
     </table>
 
+    <!-- Számolás gomb -->
+    <div class="calculate-section">
+        <button id="calculateButton" type="button" onclick="RecordManager.recalculateAll()">Számolás</button>
+    </div>
+
     <!-- Gombok és nyelvválasztó -->
-    <div class="export-section">
+    <div class="export-section" style="display: none;">
         <label for="languageSelect">PDF nyelv:</label>
         <select id="languageSelect">
             <option value="hu">Magyar</option>
