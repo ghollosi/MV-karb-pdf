@@ -1,19 +1,21 @@
 const RecordManager = {
     records: JSON.parse(localStorage.getItem('records')) || [],
+    isCalculated: false,
+
     addRecord: function () {
         if (!validateForm()) return;
 
         const workName = document.getElementById('workName').value;
         const workDescription = document.getElementById('workDescription').value;
-        const netMaterialCost = parseFloat(document.getElementById('materialCost').value);
-        const materialProcurementFee = parseFloat(document.getElementById('materialProcurementFee').value);
+        const originalMaterialCost = parseFloat(document.getElementById('materialCost').value); // Eredeti nettó anyagköltség
+        const materialProcurementFee = parseFloat(document.getElementById('materialProcurementFee').value); // Anyagbeszerzési díj
         const workHours = parseFloat(document.getElementById('workHours').value);
         const netHourlyRate = parseFloat(document.getElementById('hourlyRate').value);
         const notes = document.getElementById('notes').value;
         const vatRate = parseFloat(document.getElementById('vatRate').value) / 100 || 0.21;
 
-        if (workName && workDescription && !isNaN(netMaterialCost) && !isNaN(materialProcurementFee) && !isNaN(workHours) && !isNaN(netHourlyRate) && notes) {
-            const adjustedNetMaterialCost = netMaterialCost * (1 + materialProcurementFee / 100);
+        if (workName && workDescription && !isNaN(originalMaterialCost) && !isNaN(materialProcurementFee) && !isNaN(workHours) && !isNaN(netHourlyRate) && notes) {
+            const adjustedNetMaterialCost = originalMaterialCost * (1 + materialProcurementFee / 100); // Nettó anyagköltség + beszerzési díj
             const materialVat = adjustedNetMaterialCost * vatRate;
             const grossMaterialCost = adjustedNetMaterialCost + materialVat;
             const netLaborCost = workHours * netHourlyRate;
@@ -26,7 +28,9 @@ const RecordManager = {
             this.records.push({ 
                 workName, 
                 workDescription, 
-                netMaterialCost: adjustedNetMaterialCost,
+                originalMaterialCost, // Eredeti nettó anyagköltség tárolása
+                materialProcurementFee, // Anyagbeszerzési díj tárolása
+                netMaterialCost: adjustedNetMaterialCost, // Számított nettó anyagköltség
                 materialVat,
                 grossMaterialCost,
                 workHours, 
@@ -38,11 +42,12 @@ const RecordManager = {
                 netTotal,
                 totalVat,
                 grossTotal,
-                vatRate: vatRate * 100 // Százalékban tároljuk
+                vatRate: vatRate * 100
             });
             localStorage.setItem('records', JSON.stringify(this.records));
             this.updateTable();
             document.getElementById('maintenanceForm').reset();
+            this.hideExportSection();
         } else {
             const lang = document.getElementById('languageSelect').value;
             const messages = {
@@ -53,18 +58,45 @@ const RecordManager = {
             alert(messages[lang]);
         }
     },
+
     deleteRecord: function (index) {
         this.records.splice(index, 1);
         localStorage.setItem('records', JSON.stringify(this.records));
         this.updateTable();
+        this.hideExportSection();
     },
+
+    editRecord: function (index) {
+        const record = this.records[index];
+        document.getElementById('workName').value = record.workName;
+        document.getElementById('workDescription').value = record.workDescription;
+        document.getElementById('materialCost').value = record.originalMaterialCost; // Eredeti nettó anyagköltség visszaállítása
+        document.getElementById('materialProcurementFee').value = record.materialProcurementFee || 15;
+        document.getElementById('workHours').value = record.workHours;
+        document.getElementById('hourlyRate').value = record.netHourlyRate;
+        document.getElementById('notes').value = record.notes;
+
+        this.records.splice(index, 1);
+        localStorage.setItem('records', JSON.stringify(this.records));
+        this.updateTable();
+
+        const addButton = document.querySelector('#maintenanceForm button');
+        addButton.textContent = "Módosítás mentése";
+        addButton.onclick = () => {
+            this.addRecord();
+            addButton.textContent = "Új rekord hozzáadása";
+            addButton.onclick = () => this.addRecord();
+        };
+
+        this.hideExportSection();
+    },
+
     updateTable: function () {
         const tableBody = document.querySelector('#summaryTable tbody');
         tableBody.innerHTML = '';
         const vatRate = parseFloat(document.getElementById('vatRate').value) / 100 || 0.21;
 
         this.records.forEach((record, index) => {
-            // Frissítjük az IVA-t az aktuális áfakulcs alapján
             record.materialVat = record.netMaterialCost * vatRate;
             record.grossMaterialCost = record.netMaterialCost + record.materialVat;
             record.laborVat = record.netLaborCost * vatRate;
@@ -86,13 +118,17 @@ const RecordManager = {
                 <td>${record.laborVat.toFixed(2)}</td>
                 <td>${record.grossLaborCost.toFixed(2)}</td>
                 <td>${record.notes}</td>
-                <td><button onclick="RecordManager.deleteRecord(${index})">Törlés</button></td>
+                <td>
+                    <button onclick="RecordManager.deleteRecord(${index})">Törlés</button>
+                    <button class="edit-button" onclick="RecordManager.editRecord(${index})">Szerkesztés</button>
+                </td>
             `;
             tableBody.appendChild(row);
         });
         localStorage.setItem('records', JSON.stringify(this.records));
         this.updateTotals();
     },
+
     updateTotals: function () {
         const totalNetMaterialCost = document.getElementById('totalNetMaterialCost');
         const totalMaterialVat = document.getElementById('totalMaterialVat');
@@ -143,20 +179,28 @@ const RecordManager = {
         document.getElementById('displayClientEmail').textContent = document.getElementById('clientEmail').value;
         document.getElementById('displayValidityDays').textContent = document.getElementById('validityDays').value;
     },
+
     calculateTravelCost: function () {
         const totalWorkHours = parseFloat(document.getElementById('totalWorkHours').textContent) || 0;
         const netTravelRate = parseFloat(document.getElementById('travelRate').value) || 0;
         const distanceFromBase = parseFloat(document.getElementById('distanceFromBase').value) || 0;
         const vatRate = parseFloat(document.getElementById('vatRate').value) / 100 || 0.21;
 
-        let multiplier = totalWorkHours;
-        if (totalWorkHours < 8) {
-            multiplier = 8;
+        // 1. Munkaórák száma / 8, minimum 1, ha nagyobb mint 1, akkor felfelé kerekítve egész szám
+        let multiplier = totalWorkHours / 8;
+        if (multiplier < 8) {
+            multiplier = 1;
         } else {
-            multiplier = Math.ceil(totalWorkHours / 8) * 8;
+            multiplier = Math.ceil(totalWorkHours / 8);
         }
 
-        const netTravelCost = totalWorkHours / multiplier * netTravelRate * distanceFromBase;
+        // 2. Szorzó * Távolság a telephelytől
+        const distanceFactor = multiplier * distanceFromBase;
+
+        // 3. DistanceFactor * Kilométerdíj = Nettó kiszállási díj
+        const netTravelCost = distanceFactor * netTravelRate;
+
+        // 4. IVA kiszámítása a nettó kiszállási díj alapján
         const travelVat = netTravelCost * vatRate;
         const grossTravelCost = netTravelCost + travelVat;
 
@@ -165,8 +209,42 @@ const RecordManager = {
         document.getElementById('grossTravelCost').textContent = grossTravelCost.toFixed(2);
 
         this.updateTotals();
+        this.hideExportSection();
     },
+
+    recalculateAll: function () {
+        this.updateTable();
+        this.calculateTravelCost();
+        this.updateTotals();
+        this.isCalculated = true;
+        document.querySelector('.export-section').style.display = 'flex';
+
+        const lang = document.getElementById('languageSelect').value;
+        const messages = {
+            hu: "Számolás megtörtént, most már exportálhat!",
+            en: "Calculation completed, you can now export!",
+            es: "¡Cálculo completado, ahora puede exportar!"
+        };
+        alert(messages[lang]);
+    },
+
+    hideExportSection: function () {
+        this.isCalculated = false;
+        document.querySelector('.export-section').style.display = 'none';
+    },
+
     exportToPDF: function () {
+        if (!this.isCalculated) {
+            const lang = document.getElementById('languageSelect').value;
+            const messages = {
+                hu: "Előbb nyomja meg a 'Számolás' gombot!",
+                en: "Please press the 'Calculate' button first!",
+                es: "¡Por favor, presione el botón 'Calcular' primero!"
+            };
+            alert(messages[lang]);
+            return;
+        }
+
         const { jsPDF } = window.jspdf;
         const language = document.getElementById('languageSelect').value;
         const vatRate = parseFloat(document.getElementById('vatRate').value) || 21;
@@ -344,15 +422,14 @@ const RecordManager = {
             record.notes
         ]);
 
-        // Összesítés a fő táblázat aljára
         const totalsForMainTable = ["", "", "", "", "", "", "", "", "", "", ""];
-        totalsForMainTable[2] = document.getElementById('totalNetMaterialCost').textContent; // Nettó anyagköltség
-        totalsForMainTable[3] = document.getElementById('totalMaterialVat').textContent; // IVA anyag
-        totalsForMainTable[4] = document.getElementById('totalGrossMaterialCost').textContent; // Bruttó anyagköltség
-        totalsForMainTable[5] = document.getElementById('totalWorkHours').textContent; // Munkaórák
-        totalsForMainTable[7] = document.getElementById('totalNetLaborCost').textContent; // Nettó munkadíj
-        totalsForMainTable[8] = document.getElementById('totalLaborVat').textContent; // IVA munkadíj
-        totalsForMainTable[9] = document.getElementById('totalGrossLaborCost').textContent; // Bruttó munkadíj
+        totalsForMainTable[2] = document.getElementById('totalNetMaterialCost').textContent;
+        totalsForMainTable[3] = document.getElementById('totalMaterialVat').textContent;
+        totalsForMainTable[4] = document.getElementById('totalGrossMaterialCost').textContent;
+        totalsForMainTable[5] = document.getElementById('totalWorkHours').textContent;
+        totalsForMainTable[7] = document.getElementById('totalNetLaborCost').textContent;
+        totalsForMainTable[8] = document.getElementById('totalLaborVat').textContent;
+        totalsForMainTable[9] = document.getElementById('totalGrossLaborCost').textContent;
 
         doc.autoTable({
             head: [selectedLang.headers],
@@ -383,17 +460,17 @@ const RecordManager = {
                 fontStyle: 'bold'
             },
             columnStyles: {
-                0: { cellWidth: 18 }, // Munka megnevezése
-                1: { cellWidth: 35 }, // Munka részletes leírása
-                2: { cellWidth: 13 }, // Nettó anyagköltség
-                3: { cellWidth: 13 }, // IVA anyag
-                4: { cellWidth: 13 }, // Bruttó anyagköltség
-                5: { cellWidth: 13 }, // Munkaórák száma
-                6: { cellWidth: 13 }, // Nettó munkaóra költsége/fő
-                7: { cellWidth: 13 }, // Nettó munkadíj
-                8: { cellWidth: 13 }, // IVA munkadíj
-                9: { cellWidth: 13 }, // Bruttó munkadíj
-                10: { cellWidth: 25 }, // Megjegyzés
+                0: { cellWidth: 18 },
+                1: { cellWidth: 35 },
+                2: { cellWidth: 13 },
+                3: { cellWidth: 13 },
+                4: { cellWidth: 13 },
+                5: { cellWidth: 13 },
+                6: { cellWidth: 13 },
+                7: { cellWidth: 13 },
+                8: { cellWidth: 13 },
+                9: { cellWidth: 13 },
+                10: { cellWidth: 25 },
             },
         });
 
@@ -441,6 +518,63 @@ const RecordManager = {
         doc.save(selectedLang.filename);
         OfferManager.saveOffer();
     },
+
+    exportToExcel: function () {
+        if (!this.isCalculated) {
+            const lang = document.getElementById('languageSelect').value;
+            const messages = {
+                hu: "Előbb nyomja meg a 'Számolás' gombot!",
+                en: "Please press the 'Calculate' button first!",
+                es: "¡Por favor, presione el botón 'Calcular' primero!"
+            };
+            alert(messages[lang]);
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+        const wsData = [
+            ["Ajánlatkészítő", document.getElementById('offererName').value],
+            ["Ügyfél neve", document.getElementById('clientName').value],
+            ["Ügyfél címe", document.getElementById('clientAddress').value],
+            ["Ügyfél telefonszáma", document.getElementById('clientPhone').value],
+            ["Ügyfél email címe", document.getElementById('clientEmail').value],
+            ["Ajánlat érvényessége (nap)", document.getElementById('validityDays').value],
+            ["Távolság a telephelytől (km)", document.getElementById('distanceFromBase').value],
+            [],
+            ["Munka megnevezése", "Munka részletes leírása", "Nettó anyagköltség (€)", "IVA", "Bruttó anyagköltség (€)", 
+             "Munkaórák száma (h)", "Nettó munkaóra költsége/fő (€/h)", "Nettó munkadíj (€)", "IVA", "Bruttó munkadíj (€)", "Megjegyzés"]
+        ];
+
+        this.records.forEach(record => {
+            wsData.push([
+                record.workName,
+                record.workDescription,
+                record.netMaterialCost.toFixed(2),
+                record.materialVat.toFixed(2),
+                record.grossMaterialCost.toFixed(2),
+                record.workHours.toFixed(2),
+                record.netHourlyRate.toFixed(2),
+                record.netLaborCost.toFixed(2),
+                record.laborVat.toFixed(2),
+                record.grossLaborCost.toFixed(2),
+                record.notes
+            ]);
+        });
+
+        wsData.push([]);
+        wsData.push(["Összesen:", "", document.getElementById('totalNetMaterialCost').textContent, 
+                     document.getElementById('totalMaterialVat').textContent, document.getElementById('totalGrossMaterialCost').textContent, 
+                     document.getElementById('totalWorkHours').textContent, "", document.getElementById('totalNetLaborCost').textContent, 
+                     document.getElementById('totalLaborVat').textContent, document.getElementById('totalGrossLaborCost').textContent, ""]);
+        wsData.push(["Kiszállási díj (€):", "", "", "", "", "", "", document.getElementById('netTravelCost').textContent, 
+                     document.getElementById('travelVat').textContent, document.getElementById('grossTravelCost').textContent, ""]);
+        wsData.push(["Összesen (Anyag, Munkadíj, Kiszállás):", "", "", "", "", "", "", document.getElementById('grandNetTotal').textContent, 
+                     document.getElementById('grandVatTotal').textContent, document.getElementById('grandGrossTotal').textContent, ""]);
+
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        XLSX.utils.book_append_sheet(wb, ws, "Karbantartás");
+        XLSX.writeFile(wb, "molino_villas_karbantartas.xlsx");
+    },
 };
 
 const PhotoManager = {
@@ -475,11 +609,14 @@ const PhotoManager = {
             reader.readAsDataURL(file);
         }
     },
+
     deletePhoto: function (index) {
         this.uploadedPhotos.splice(index, 1);
         localStorage.setItem('uploadedPhotos', JSON.stringify(this.uploadedPhotos));
         this.displayPhotos();
+        RecordManager.hideExportSection();
     },
+
     displayPhotos: function () {
         const photoList = document.getElementById('photoList');
         photoList.innerHTML = '';
@@ -516,6 +653,7 @@ const OfferManager = {
         localStorage.setItem('savedOffers', JSON.stringify(this.offers));
         this.updateOffersTable();
     },
+
     updateOffersTable: function () {
         const tableBody = document.querySelector('#offersTable tbody');
         tableBody.innerHTML = '';
@@ -539,6 +677,7 @@ const OfferManager = {
             });
         }
     },
+
     loadOffer: function (index) {
         const offer = this.offers[index];
         document.getElementById('offererName').value = offer.formData.offererName;
@@ -556,7 +695,9 @@ const OfferManager = {
         RecordManager.calculateTravelCost();
 
         document.getElementById('offersModal').style.display = 'none';
+        RecordManager.hideExportSection();
     },
+
     deleteOffer: function (index) {
         const lang = document.getElementById('languageSelect').value;
         const confirmMessages = {
@@ -568,6 +709,7 @@ const OfferManager = {
             this.offers.splice(index, 1);
             localStorage.setItem('savedOffers', JSON.stringify(this.offers));
             this.updateOffersTable();
+            RecordManager.hideExportSection();
         }
     }
 };
@@ -634,6 +776,7 @@ function saveFormData() {
         es: "¡Datos guardados!"
     };
     alert(messages[lang]);
+    RecordManager.hideExportSection();
 }
 
 function clearFormData() {
@@ -645,9 +788,12 @@ function clearFormData() {
     document.getElementById('maintenanceForm').reset();
 
     RecordManager.records = [];
+    RecordManager.isCalculated = false;
     RecordManager.updateTable();
     PhotoManager.uploadedPhotos = [];
     PhotoManager.displayPhotos();
+
+    document.querySelector('.export-section').style.display = 'none';
 
     const lang = document.getElementById('languageSelect').value;
     const messages = {
