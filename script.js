@@ -186,21 +186,16 @@ const RecordManager = {
         const distanceFromBase = parseFloat(document.getElementById('distanceFromBase').value) || 0;
         const vatRate = parseFloat(document.getElementById('vatRate').value) / 100 || 0.21;
 
-        // 1. Munkaórák száma / 8, minimum 1, ha nagyobb mint 1, akkor felfelé kerekítve egész szám
+        // Javított multiplier számítás
         let multiplier = totalWorkHours / 8;
-        if (multiplier < 8) {
+        if (totalWorkHours < 8) {
             multiplier = 1;
         } else {
             multiplier = Math.ceil(totalWorkHours / 8);
         }
 
-        // 2. Szorzó * Távolság a telephelytől
         const distanceFactor = multiplier * distanceFromBase;
-
-        // 3. DistanceFactor * Kilométerdíj = Nettó kiszállási díj
         const netTravelCost = distanceFactor * netTravelRate;
-
-        // 4. IVA kiszámítása a nettó kiszállási díj alapján
         const travelVat = netTravelCost * vatRate;
         const grossTravelCost = netTravelCost + travelVat;
 
