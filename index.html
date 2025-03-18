@@ -22,75 +22,103 @@
                 A program két fő részből áll: az "Egyszer megadandó adatok" és a "Karbantartási munkák" űrlapból.<br><br>
                 Egyszer megadandó adatok<br><br>
                 Itt azokat az információkat adod meg, amelyek az egész ajánlathoz tartoznak:<br><br>
-                Ajánlatkészítő neve: Ki készíti az ajánlatot (pl. a te neved).<br>
-                Ügyfél neve: Kinek készül az ajánlat.<br>
-                Ügyfél címe: Az ügyfél lakcíme vagy a munkavégzés helyszíne.<br>
-                Ügyfél telefonszáma: Az ügyfél elérhetősége (csak számokat írj be!).<br>
-                Ügyfél email címe: Az ügyfél email címe (érvényes formátum: pl. nev@pelda.hu).<br>
-                Ajánlat érvényessége (nap): Hány napig érvényes az ajánlat.<br>
-                Távolság a telephelytől (km): Hány kilométerre van a munkavégzés helye a telephelytől (ez a kiszállási díjhoz kell).<br>
-                ÁFA mértéke (%): Az IVA mértéke, alapértelmezésként 21%, de módosítható.<br><br>
-                Ezeket az adatokat egyszer kell kitölteni, és a program automatikusan menti őket a böngészőbe.<br><br>
+                - Ajánlatkészítő neve: Ki készíti az ajánlatot (pl. a te neved).<br>
+                - Ügyfél neve: Kinek készül az ajánlat.<br>
+                - Ügyfél címe: Az ügyfél lakcíme vagy a munkavégzés helyszíne.<br>
+                - Ügyfél telefonszáma: Az ügyfél elérhetősége (csak számokat írj be!).<br>
+                - Ügyfél email címe: Az ügyfél email címe (érvényes formátum: pl. nev@pelda.hu).<br>
+                - Ajánlat érvényessége (nap): Hány napig érvényes az ajánlat.<br>
+                - Távolság a telephelytől (km): Hány kilométerre van a munkavégzés helye a telephelytől (ez a kiszállási díjhoz kell).<br>
+                - ÁFA mértéke (%): Az IVA mértéke, alapértelmezésként 21%, de módosítható.<br><br>
+                Ezeket az adatokat egyszer kell kitölteni, és a program automatikusan menti őket a böngészőbe a "Mentés" gomb megnyomásával.<br><br>
                 Karbantartási munkák<br><br>
                 Itt adhatod fel az egyes munkákat, amelyeket el akarsz végezni:<br><br>
-                Munka megnevezése: A munka rövid neve (pl. "Villanykapcsoló csere").<br>
-                Munka részletes leírása: Mit fogsz csinálni (pl. "Fürdőszobai villanykapcsoló cseréje új darabra").<br>
-                Anyagköltség (€, nettó): Mennyibe kerülnek az anyagok IVA nélkül (pl. 10 €).<br>
-                Anyagbeszerzési díj (%): Az anyagköltség hány százaléka a beszerzés költsége (pl. 10%).<br>
-                Munkaórák száma (h): Hány órát dolgozol rajta (pl. 2 óra).<br>
-                Munkaóra költsége/fő (€/h, nettó): Mennyit kérsz egy óra munkáért IVA nélkül (pl. 20 €/óra).<br>
-                Megjegyzés: Bármi, amit még tudni kell (pl. "Sürgős javítás").<br><br>
+                - Munka megnevezése: A munka rövid neve (pl. "Villanykapcsoló csere").<br>
+                - Munka részletes leírása: Mit fogsz csinálni (pl. "Fürdőszobai villanykapcsoló cseréje új darabra", max. 500 karakter).<br>
+                - Anyagköltség (€, nettó): Mennyibe kerülnek az anyagok IVA nélkül (pl. 10 €).<br>
+                - Anyagbeszerzési díj (%): Az anyagköltség hány százaléka a beszerzés költsége (pl. 10%, alapértelmezett: 15%).<br>
+                - Munkaórák száma (h): Hány órát dolgozol rajta (pl. 2 óra).<br>
+                - Munkaóra költsége/fő (€/h, nettó): Mennyit kérsz egy óra munkáért IVA nélkül (pl. 20 €/óra).<br>
+                - Megjegyzés: Bármi, amit még tudni kell (pl. "Sürgős javítás").<br><br>
                 A "Hozzáad" gombbal tudod felvenni a munkát a táblázatba.<br><br>
                 3. Hogyan számol a program?<br><br>
                 A program automatikusan kiszámolja a költségeket az általad megadott nettó adatok alapján, és hozzáadja az IVA-t (alapértelmezésként 21%, de módosítható). Nézzük meg lépésről lépésre:<br><br>
                 Anyagköltség számítása<br><br>
                 A táblázatban látható nettó anyagköltség az alapanyag ára plusz az anyagbeszerzési díj, majd erre számítódik az IVA.<br><br>
-                Számítás: Nettó anyagköltség = Alapanyag ára × (1 + Anyagbeszerzési díj / 100)<br>
-                IVA = Nettó anyagköltség × (ÁFA mértéke / 100)<br>
-                Bruttó anyagköltség = Nettó anyagköltség + IVA<br>
-                Példa (21% IVA-val): Ha az alapanyag 100 € (nettó), és az anyagbeszerzési díj 10%, akkor: 100 × (1 + 10/100) = 110 € (nettó). IVA = 110 × 0,21 = 23,1 €. Bruttó = 110 + 23,1 = 133,1 €.<br><br>
+                - Számítás: Nettó anyagköltség = Alapanyag ára × (1 + Anyagbeszerzési díj / 100)<br>
+                - IVA = Nettó anyagköltség × (ÁFA mértéke / 100)<br>
+                - Bruttó anyagköltség = Nettó anyagköltség + IVA<br>
+                - Példa (21% IVA-val): Ha az alapanyag 100 € (nettó), és az anyagbeszerzési díj 10%, akkor: 100 × (1 + 10/100) = 110 € (nettó). IVA = 110 × 0,21 = 23,1 €. Bruttó = 110 + 23,1 = 133,1 €.<br><br>
                 Munkadíj számítása<br><br>
                 A munkadíj a nettó munkaórák és az óradíj szorzata, plusz az IVA.<br><br>
-                Számítás: Nettó munkadíj = Munkaórák száma × Munkaóra költsége/fő<br>
-                IVA = Nettó munkadíj × (ÁFA mértéke / 100)<br>
-                Bruttó munkadíj = Nettó munkadíj + IVA<br>
-                Példa (21% IVA-val): Ha 2 órát dolgozol, és az óradíjad 20 €/óra (nettó), akkor: 2 × 20 = 40 € (nettó). IVA = 40 × 0,21 = 8,4 €. Bruttó = 40 + 8,4 = 48,4 €.<br><br>
+                - Számítás: Nettó munkadíj = Munkaórák száma × Munkaóra költsége/fő<br>
+                - IVA = Nettó munkadíj × (ÁFA mértéke / 100)<br>
+                - Bruttó munkadíj = Nettó munkadíj + IVA<br>
+                - Példa (21% IVA-val): Ha 2 órát dolgozol, és az óradíjad 20 €/óra (nettó), akkor: 2 × 20 = 40 € (nettó). IVA = 40 × 0,21 = 8,4 €. Bruttó = 40 + 8,4 = 48,4 €.<br><br>
                 Összesen (egy munkához)<br><br>
                 Ez a nettó anyagköltség és munkadíj összege, plusz az IVA, majd a bruttó összeg.<br><br>
-                Számítás: Nettó összesen = Nettó anyagköltség + Nettó munkadíj<br>
-                IVA = Nettó összesen × (ÁFA mértéke / 100)<br>
-                Bruttó összesen = Nettó összesen + IVA<br>
-                Példa (21% IVA-val): Ha a nettó anyagköltség 110 € és a nettó munkadíj 40 €, akkor: 110 + 40 = 150 € (nettó). IVA = 150 × 0,21 = 31,5 €. Bruttó = 150 + 31,5 = 181,5 €.<br><br>
+                - Számítás: Nettó összesen = Nettó anyagköltség + Nettó munkadíj<br>
+                - IVA = Nettó összesen × (ÁFA mértéke / 100)<br>
+                - Bruttó összesen = Nettó összesen + IVA<br>
+                - Példa (21% IVA-val): Ha a nettó anyagköltség 110 € és a nettó munkadíj 40 €, akkor: 110 + 40 = 150 € (nettó). IVA = 150 × 0,21 = 31,5 €. Bruttó = 150 + 31,5 = 181,5 €.<br><br>
                 Kiszállási díj számítása<br><br>
-                A kiszállási díj a nettó kilométerdíjból és távolságból számolódik, az adott IVA-val.<br><br>
-                Számítás: Nettó kiszállási díj = (Összes munkaóra / Szorzó) × Kilométerdíj × Távolság a telephelytől<br>
-                IVA = Nettó kiszállási díj × (ÁFA mértéke / 100)<br>
-                Bruttó kiszállási díj = Nettó kiszállási díj + IVA<br>
-                Példa (21% IVA-val): Ha 5 órát dolgozol, a kilométerdíj 0,5 €/km (nettó), és a távolság 50 km, akkor: Szorzó = 8, Nettó = (5 / 8) × 0,5 × 50 = 15,625 €. IVA = 15,625 × 0,21 = 3,28125 €. Bruttó = 15,625 + 3,28125 = 18,90625 € (kerekítve 18,91 €).<br><br>
+                A kiszállási díj a nettó kilométerdíjból, a távolságból és az összes munkaórából számolódik, az adott IVA-val.<br><br>
+                - Számítás:<br>
+                  1. Szorzó = Összes munkaóra / 8<br>
+                  2. Ha az összes munkaóra < 8, akkor Szorzó = 1, különben Szorzó = Összes munkaóra / 8 felfelé kerekítve (pl. 2,5 → 3).<br>
+                  3. Nettó kiszállási díj = Szorzó × Távolság a telephelytől × Kilométerdíj<br>
+                  4. IVA = Nettó kiszállási díj × (ÁFA mértéke / 100)<br>
+                  5. Bruttó kiszállási díj = Nettó kiszállási díj + IVA<br>
+                - Példa (21% IVA-val): Ha 20 órát dolgozol, a kilométerdíj 0,5 €/km (nettó), és a távolság 50 km, akkor:<br>
+                  - Szorzó = 20 / 8 = 2,5 → 3 (felfelé kerekítve).<br>
+                  - Nettó = 3 × 50 × 0,5 = 75 €.<br>
+                  - IVA = 75 × 0,21 = 15,75 €.<br>
+                  - Bruttó = 75 + 15,75 = 90,75 €.<br><br>
                 Összesen (Anyag, Munkadíj, Kiszállás)<br><br>
                 Ez az összes nettó költség, az IVA és a bruttó összeg.<br><br>
-                Számítás: Nettó összesen = Összes nettó anyagköltség + Összes nettó munkadíj + Nettó kiszállási díj<br>
-                IVA = Nettó összesen × (ÁFA mértéke / 100)<br>
-                Bruttó összesen = Nettó összesen + IVA<br><br>
+                - Számítás: Nettó összesen = Összes nettó anyagköltség + Összes nettó munkadíj + Nettó kiszállási díj<br>
+                - IVA = Nettó összesen × (ÁFA mértéke / 100)<br>
+                - Bruttó összesen = Nettó összesen + IVA<br>
+                - Példa (21% IVA-val): Ha az összes nettó anyagköltség 110 €, az összes nettó munkadíj 40 €, és a nettó kiszállási díj 75 €, akkor: 110 + 40 + 75 = 225 € (nettó). IVA = 225 × 0,21 = 47,25 €. Bruttó = 225 + 47,25 = 272,25 €.<br><br>
                 4. Mire jók a gombok?<br><br>
                 A programban több gomb segít a munkádban:<br><br>
-                Hozzáad (Karbantartási munkák): Ezzel adsz fel egy új munkát a táblázatba.<br>
-                Törlés (táblázat sorai mellett): Egy munkát törölhetsz vele a táblázatból.<br>
-                Mentés: Az "Egyszer megadandó adatok" űrlap adatait menti el.<br>
-                Minden adat törlése: Törli az összes felvett adatot.<br>
-                PDF-be exportálás: PDF fájlba menti az összes adatot (nettó, IVA, bruttó).<br>
-                Excel-be exportálás: Excel fájlba menti ugyanezeket az adatokat.<br>
-                Képfeltöltés: Képeket tölthetsz fel (max. 20).<br>
-                Súgó (bal felső sarok): Ezt az útmutatót nyitja meg.<br>
-                Korábbi ajánlatok megtekintése: Megmutatja a mentett ajánlatokat, betölthetőek és törölhetőek.<br><br>
+                - Hozzáad (Karbantartási munkák): Ezzel adsz fel egy új munkát a táblázatba.<br>
+                - Törlés (táblázat sorai mellett): Egy munkát törölhetsz vele a táblázatból.<br>
+                - Szerkesztés (táblázat sorai mellett): Egy meglévő munka adatait szerkesztheted; az űrlap kitöltődik az adott sor adataival, és a "Hozzáad" gomb "Módosítás mentése" feliratra vált.<br>
+                - Mentés (Egyszer megadandó adatok): Az "Egyszer megadandó adatok" űrlap adatait menti el a böngészőbe.<br>
+                - Adatok törlése (Egyszer megadandó adatok): Törli az "Egyszer megadandó adatok" űrlap tartalmát és a hozzá tartozó mentett adatokat a böngészőből.<br>
+                - Számolás: Frissíti az összes számítást (anyagköltség, munkadíj, kiszállási díj, összesítések), és láthatóvá teszi az export gombokat.<br>
+                - Minden adat törlése: Törli az összes felvett adatot (munkák, fotók, egyszeri adatok) a böngészőből és az űrlapokról.<br>
+                - PDF-be exportálás: PDF fájlba menti az összes adatot (nettó, IVA, bruttó) a választott nyelven (magyar, angol, spanyol), és menti az ajánlatot a korábbi ajánlatok közé.<br>
+                - Excel-be exportálás: Excel fájlba menti ugyanezeket az adatokat magyar nyelven.<br>
+                - Képfeltöltés: Képeket tölthetsz fel (max. 20), és törölheted őket a "Törlés" gombbal.<br>
+                - Súgó (bal felső sarok): Ezt az útmutatót nyitja meg.<br>
+                - Korábbi ajánlatok megtekintése: Megmutatja a mentett ajánlatokat, amelyeket betölthetsz vagy törölhetsz.<br><br>
                 5. Mikor frissül a táblázat?<br><br>
-                A táblázat automatikusan frissül új munka felvételkor, törléskor, az ÁFA mértéke módosításakor, vagy a kiszállási díj számításakor.<br><br>
+                A táblázat automatikusan frissül az alábbi esetekben:<br>
+                - Új munka felvételkor ("Hozzáad" gomb).<br>
+                - Munka törlésekor ("Törlés" gomb).<br>
+                - Munka szerkesztésekor ("Szerkesztés" gomb és "Módosítás mentése").<br>
+                - Az ÁFA mértéke módosításakor (automatikusan újraszámol).<br>
+                - A kiszállási díj számításakor (pl. kilométerdíj vagy távolság változtatásakor, ha a "Számolás" gombot megnyomják).<br>
+                - A "Számolás" gomb megnyomásakor (minden adatot frissít).<br><br>
                 6. Képfeltöltés<br><br>
-                Maximum 20 fotó tölthető fel, a képek nem kerülnek a PDF-be vagy Excel-be.<br><br>
-                7. Hibák és figyelmeztetések<br><br>
-                A program figyelmeztet, ha az email cím, telefonszám vagy számértékek hibásak.<br><br>
-                8. Tippek a használathoz<br><br>
-                Ellenőrizd az adatokat exportálás előtt, és használd a "Minden adat törlése" gombot új ajánlat kezdéséhez!
+                Maximum 20 fotó tölthető fel, a képek a böngészőben tárolódnak, és törölhetők a "Törlés" gombbal. Ezek nem kerülnek a PDF-be vagy Excel-be, csak a munkafolyamat dokumentálására szolgálnak.<br><br>
+                7. Korábbi ajánlatok kezelése<br><br>
+                A "Korábbi ajánlatok megtekintése" gomb megnyit egy táblázatot, ahol a mentett ajánlatok láthatók (ajánlatkészítő neve, ügyfél neve, dátum). A "Betöltés" gombbal visszaállíthatod az adott ajánlat adatait (űrlap és táblázat), a "Törlés" gombbal pedig eltávolíthatod az ajánlatot. Az ajánlatok a PDF exportáláskor automatikusan mentésre kerülnek a böngészőbe.<br><br>
+                8. Hibák és figyelmeztetések<br><br>
+                A program figyelmeztet, ha:<br>
+                - Az email cím formátuma hibás (pl. hiányzik a "@" vagy a domain).<br>
+                - A telefonszám nem csak számokat tartalmaz.<br>
+                - Az anyagköltség vagy munkaórák negatívak.<br>
+                - Exportálás előtt nem nyomtad meg a "Számolás" gombot.<br>
+                - Több mint 20 fotót próbálsz feltölteni.<br>
+                - Nincs adat a táblázatban exportáláskor.<br><br>
+                9. Tippek a használathoz<br><br>
+                - Ellenőrizd az adatokat exportálás előtt, és használd a "Minden adat törlése" gombot új ajánlat kezdéséhez!<br>
+                - A "Számolás" gombot mindig nyomd meg, ha módosítasz valamit (pl. ÁFA, kilométerdíj, távolság), hogy az összesítés frissüljön.<br>
+                - Ha szerkesztesz egy rekordot, a módosítás mentése után az űrlap üresre áll vissza.<br>
+                - A korábbi ajánlatokat rendszeresen ellenőrizd, és töröld a feleslegeseket a tárhely felszabadításához!<br>
             </p>
         </div>
     </div>
